@@ -173,13 +173,34 @@ College_tennis/
 
 ## Example
 
+### Using F3ED Model (Recommended)
+
 ```bash
-# Process all videos in ncaa_videos and generate annotations
+# Process all videos in ncaa_videos and generate annotations using F3ED model
 python run_full_pipeline.py \
-    --video_dir /mnt/ssd2/lingyu/ncaa_videos \
-    --model_dir /path/to/f3set/model \
+    --video_dir ../ncaa_videos \
+    --model_dir ./F3Set/f3set-model/f3ed \
     --output_dir ./ncaa_annotations \
+    --frame_dir ./ncaa_frames \
+    --dataset f3set-tennis \
+    --use_f3ed
+```
+
+### Using Baseline Model
+
+```bash
+# Process all videos using baseline model
+python run_full_pipeline.py \
+    --video_dir ../ncaa_videos \
+    --model_dir /path/to/baseline/model \
+    --output_dir ./ncaa_annotations \
+    --frame_dir ./ncaa_frames \
     --dataset f3set-tennis
 ```
+
+**Note**: The model directory should contain:
+- `checkpoint_XXX.pt` - Model checkpoint file
+- `config.json` - Model configuration
+- `loss.json` (optional) - Training loss history
 
 This will process all videos and create annotation files in `./ncaa_annotations/annotations.json`.
