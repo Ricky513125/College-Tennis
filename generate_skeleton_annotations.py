@@ -496,8 +496,10 @@ def load_models(model_path, config_path=None):
     pose_model.to(device)
     pose_model.eval()
     
-    # Load person detection model
-    print("Loading person detection model...")
+    # Load person detection model (Faster R-CNN)
+    # This is separate from HRNet - it's used to detect people in the frame first
+    print("Loading person detection model (Faster R-CNN)...")
+    print("Note: This model is downloaded automatically from torchvision (one-time download)")
     box_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
     box_model.to(device)
     box_model.eval()
