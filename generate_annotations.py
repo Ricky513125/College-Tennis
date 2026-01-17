@@ -201,8 +201,9 @@ def run_inference(model, dataset, classes, use_f3ed=False):
                     for i in range(clip['frame'].shape[0]):
                         video = clip['video'][i]
                         coarse_scores, fine_scores, support = pred_dict[video]
-                        coarse_pred_scores = batch_coarse_scores[i].cpu().numpy()
-                        fine_pred_scores = batch_fine_scores[i].cpu().numpy()
+                        # predict() already returns numpy arrays
+                        coarse_pred_scores = batch_coarse_scores[i]
+                        fine_pred_scores = batch_fine_scores[i]
                         
                         start = clip['start'][i].item()
                         if start < 0:
@@ -222,7 +223,11 @@ def run_inference(model, dataset, classes, use_f3ed=False):
                     for i in range(clip['frame'].shape[0]):
                         video = clip['video'][i]
                         scores, support = pred_dict[video]
-                        pred_scores = batch_pred_scores[i].cpu().numpy()
+                        # predict() may return numpy arrays or tensors
+                        if isinstance(batch_pred_scores[i], torch.Tensor):
+                            pred_scores = batch_pred_scores[i].cpu().numpy()
+                        else:
+                            pred_scores = batch_pred_scores[i]
                         start = clip['start'][i].item()
                         if start < 0:
                             pred_scores = pred_scores[-start:, :]
