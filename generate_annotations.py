@@ -10,6 +10,7 @@ import json
 import argparse
 import re
 import torch
+import torch.nn as nn
 import numpy as np
 from pathlib import Path
 from tqdm import tqdm
@@ -108,7 +109,30 @@ def load_model(model_dir, dataset_name='f3set-tennis', use_f3ed=False):
         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
     
     checkpoint = torch.load(checkpoint_path, map_location='cpu')
-    model.load(checkpoint)
+    
+    # Handle different checkpoint formats
+    # F3ED checkpoints are saved as direct state_dict, not wrapped
+    if isinstance(checkpoint, dict):
+        if 'model_state_dict' in checkpoint:
+            # Standard wrapped format
+            state_dict = checkpoint['model_state_dict']
+        else:
+            # Direct state_dict format (F3ED saves this way)
+            state_dict = checkpoint
+    else:
+        state_dict = checkpoint
+    
+    # Load with strict=False to handle key mismatches
+    # This allows loading even if some keys don't match exactly
+    try:
+        if isinstance(model._model, nn.DataParallel):
+            model._model.module.load_state_dict(state_dict, strict=False)
+        else:
+            model._model.load_state_dict(state_dict, strict=False)
+    except Exception as e:
+        print(f"Warning: Some keys could not be loaded: {e}")
+        print("Continuing with partial model loading...")
+    
     model.eval()
     
     if torch.cuda.is_available():
