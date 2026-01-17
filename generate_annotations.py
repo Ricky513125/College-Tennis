@@ -279,6 +279,30 @@ def generate_annotations(metadata_file, frame_dir, model_dir, output_dir,
             from dataset.frame import ActionSeqVideoDataset
             overlap_len = 0
         
+        # Check if frames exist before creating dataset
+        print("Checking frame directories...")
+        for video_entry in video_metadata[:3]:  # Check first 3 videos
+            video_id = video_entry['video']
+            video_frame_dir = os.path.join(frame_dir, video_id)
+            if os.path.exists(video_frame_dir):
+                frame_files = sorted([f for f in os.listdir(video_frame_dir) if f.endswith('.jpg')])
+                print(f"  {video_id}: {len(frame_files)} frames found (expected {video_entry['num_frames']})")
+                if len(frame_files) > 0:
+                    print(f"    First frame: {frame_files[0]}, Last frame: {frame_files[-1]}")
+            else:
+                print(f"  WARNING: Frame directory not found: {video_frame_dir}")
+        
+        # Verify frame numbering matches expected format (000000.jpg, 000001.jpg, etc.)
+        print("\nVerifying frame file format...")
+        sample_video = video_metadata[0]['video']
+        sample_frame_dir = os.path.join(frame_dir, sample_video)
+        if os.path.exists(sample_frame_dir):
+            frame_files = sorted([f for f in os.listdir(sample_frame_dir) if f.endswith('.jpg')])
+            if frame_files:
+                expected_first = '000000.jpg'
+                if frame_files[0] != expected_first:
+                    print(f"  WARNING: First frame is {frame_files[0]}, expected {expected_first}")
+        
         dataset = ActionSeqVideoDataset(
             classes,
             temp_json,
@@ -286,8 +310,13 @@ def generate_annotations(metadata_file, frame_dir, model_dir, output_dir,
             config['clip_len'],
             overlap_len=overlap_len,
             crop_dim=config['crop_dim'],
-            stride=config['stride']
+            stride=config['stride'],
+            pad_len=0  # Set pad_len to 0 to avoid issues with negative indices
         )
+        
+        print(f"\nDataset created with {len(dataset)} clips")
+        if len(dataset) == 0:
+            raise ValueError("No clips created! Check frame directories and video metadata.")
         
         # Run inference
         print("Running inference...")
