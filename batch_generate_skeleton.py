@@ -75,7 +75,7 @@ def main():
     parser.add_argument(
         '--config',
         type=str,
-        default=None,
+        default='./deep-high-resolution-net.pytorch/experiments/coco/hrnet/w48_384x288_adam_lr1e-3.yaml',
         help='Path to config YAML file (optional)'
     )
     parser.add_argument(

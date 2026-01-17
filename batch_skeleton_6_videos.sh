@@ -38,6 +38,7 @@ for video_id in "${VIDEOS[@]}"; do
         "$FRAME_DIR/$video_id" \
         --video_id "$video_id" \
         --model_path "$MODEL_PATH" \
+        --config "./deep-high-resolution-net.pytorch/experiments/coco/hrnet/w48_384x288_adam_lr1e-3.yaml" \
         --output "$OUTPUT_DIR/${video_id}_skeleton.json" \
         --skip_frames 1 \
         --detection_threshold 0.9 \

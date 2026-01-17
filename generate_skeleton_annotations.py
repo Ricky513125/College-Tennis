@@ -423,48 +423,69 @@ def load_models(model_path, config_path=None):
     """Load HRNet pose estimation model and person detection model"""
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     
-    # Load config
+    # Load config - must use a proper config file
     if config_path is None:
-        # Try to find a default config
-        config_path = os.path.join(
+        # Try to find a default config based on model name
+        base_path = os.path.join(
             os.path.dirname(__file__),
             'deep-high-resolution-net.pytorch',
             'experiments',
             'coco',
-            'w48_384x288_adam_lr1e-3.yaml'
+            'hrnet'
         )
-        if not os.path.exists(config_path):
-            # Try another common config
-            config_path = os.path.join(
-                os.path.dirname(__file__),
-                'deep-high-resolution-net.pytorch',
-                'experiments',
-                'coco',
-                'w32_256x192_adam_lr1e-3.yaml'
-            )
+        
+        if 'w48' in model_path and '384x288' in model_path:
+            config_path = os.path.join(base_path, 'w48_384x288_adam_lr1e-3.yaml')
+        elif 'w32' in model_path and '256x192' in model_path:
+            config_path = os.path.join(base_path, 'w32_256x192_adam_lr1e-3.yaml')
+        else:
+            # Default to w48_384x288
+            config_path = os.path.join(base_path, 'w48_384x288_adam_lr1e-3.yaml')
     
     if config_path and os.path.exists(config_path):
+        print(f"Using config file: {config_path}")
         # Create a mock args object for update_config
         class Args:
             def __init__(self):
                 self.cfg = config_path
                 self.opts = []
+                self.modelDir = ''
+                self.logDir = ''
+                self.dataDir = ''
+                self.prevModelDir = ''
         args = Args()
         update_config(cfg, args)
     else:
-        print("Warning: Config file not found, using default settings")
-        # Set default config values based on model name
-        cfg.defrost()
-        cfg.MODEL.NAME = 'pose_hrnet'
-        cfg.MODEL.NUM_JOINTS = 17
-        # Default to 384x288 for w48 model
-        if 'w48' in model_path and '384x288' in model_path:
-            cfg.MODEL.IMAGE_SIZE = [384, 288]
-        elif 'w32' in model_path and '256x192' in model_path:
-            cfg.MODEL.IMAGE_SIZE = [256, 192]
-        else:
-            cfg.MODEL.IMAGE_SIZE = [384, 288]  # Default
-        cfg.freeze()
+        # Try alternative paths
+        alt_paths = [
+            os.path.join(os.path.dirname(__file__), 'deep-high-resolution-net.pytorch', 'experiments', 'coco', 'hrnet', 'w48_384x288_adam_lr1e-3.yaml'),
+            os.path.join(os.path.dirname(__file__), 'deep-high-resolution-net.pytorch', 'experiments', 'coco', 'w48_384x288_adam_lr1e-3.yaml'),
+        ]
+        
+        found = False
+        for alt_path in alt_paths:
+            if os.path.exists(alt_path):
+                config_path = alt_path
+                print(f"Using config file: {config_path}")
+                class Args:
+                    def __init__(self):
+                        self.cfg = config_path
+                        self.opts = []
+                        self.modelDir = ''
+                        self.logDir = ''
+                        self.dataDir = ''
+                        self.prevModelDir = ''
+                args = Args()
+                update_config(cfg, args)
+                found = True
+                break
+        
+        if not found:
+            raise FileNotFoundError(
+                f"Config file not found. Tried:\n" +
+                "\n".join([f"  - {p}" for p in [config_path] + alt_paths]) +
+                f"\nPlease specify a valid config file using --config option"
+            )
     
     print(f"Loading pose model from: {model_path}")
     print(f"Model image size: {cfg.MODEL.IMAGE_SIZE}")
