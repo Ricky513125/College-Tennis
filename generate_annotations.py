@@ -69,17 +69,29 @@ def load_model(model_dir, dataset_name='f3set-tennis', use_f3ed=False):
     if dataset_name:
         config['dataset'] = dataset_name
     
-    # Load classes
-    events_file = os.path.join('F3Set', 'data', config['dataset'], 'events.txt')
-    if not os.path.exists(events_file):
-        raise FileNotFoundError(f"Events file not found: {events_file}")
-    
-    classes = load_classes(events_file)
-    
-    # Import model
+    # For F3ED, use the num_classes from config (the model was trained with this)
+    # For baseline, load from events.txt
     if use_f3ed:
         from train_f3set_f3ed import F3Set
-        num_classes = len(classes)
+        # Use num_classes from config (model was trained with this)
+        num_classes = config.get('num_classes')
+        if num_classes is None:
+            # Fallback: load from elements.txt
+            elements_file = os.path.join('F3Set', 'data', config['dataset'], 'elements.txt')
+            if os.path.exists(elements_file):
+                classes = load_classes(elements_file)
+                num_classes = len(classes)
+            else:
+                raise ValueError(f"Cannot determine num_classes. Please check config.json or elements.txt")
+        else:
+            # Still load classes for mapping labels
+            elements_file = os.path.join('F3Set', 'data', config['dataset'], 'elements.txt')
+            if os.path.exists(elements_file):
+                classes = load_classes(elements_file)
+            else:
+                # Create dummy classes mapping if file doesn't exist
+                classes = {f'class_{i}': i+1 for i in range(num_classes)}
+        
         model = F3Set(
             num_classes, 
             config['feature_arch'], 
@@ -92,6 +104,11 @@ def load_model(model_dir, dataset_name='f3set-tennis', use_f3ed=False):
         )
     else:
         from train_f3set_baselines import F3Set
+        # Load classes from events.txt for baseline
+        events_file = os.path.join('F3Set', 'data', config['dataset'], 'events.txt')
+        if not os.path.exists(events_file):
+            raise FileNotFoundError(f"Events file not found: {events_file}")
+        classes = load_classes(events_file)
         num_classes = len(classes) + 1  # +1 for background
         model = F3Set(
             num_classes, 
@@ -133,10 +150,11 @@ def load_model(model_dir, dataset_name='f3set-tennis', use_f3ed=False):
         print(f"Warning: Some keys could not be loaded: {e}")
         print("Continuing with partial model loading...")
     
-    model.eval()
+    # Set model to eval mode
+    model._model.eval()
     
     if torch.cuda.is_available():
-        model = model.cuda()
+        model._model = model._model.cuda()
     
     return model, classes, config
 
