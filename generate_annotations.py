@@ -165,7 +165,8 @@ def run_inference(model, dataset, classes, use_f3ed=False):
     
     INFERENCE_BATCH_SIZE = 4
     
-    model.eval()
+    # Set model to eval mode
+    model._model.eval()
     pred_dict = {}
     
     # Initialize prediction dictionaries
