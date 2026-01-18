@@ -135,8 +135,13 @@ def main():
     sys.path.insert(0, md_fed_dir)
     
     try:
-        # Import training modules
-        import train_MD_FED
+        # Import training modules (handle hyphen in filename)
+        import importlib.util
+        train_md_fed_path = os.path.join(md_fed_dir, 'train_MD-FED.py')
+        spec = importlib.util.spec_from_file_location("train_MD_FED", train_md_fed_path)
+        train_MD_FED = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(train_MD_FED)
+        
         from util.dataset import load_classes
         from dataset.input_process import ActionSeqDataset, ActionSeqVideoDataset
         
