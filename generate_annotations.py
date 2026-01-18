@@ -327,6 +327,128 @@ def generate_annotations(metadata_file, frame_dir, model_dir, output_dir,
         classes_inv = {v: k for k, v in classes.items()}
         classes_inv[0] = 'NA'
         
+        # For F3ED, we need to load events.txt to match composite labels
+        events_classes = None
+        if use_f3ed:
+            events_file = os.path.join('F3Set', 'data', dataset_name, 'events.txt')
+            if os.path.exists(events_file):
+                events_classes = load_classes(events_file)
+                print(f"Loaded {len(events_classes)} event classes from {events_file}")
+        
+        def build_event_label_from_elements(fine_pred, classes_inv):
+            """Build composite event label from fine-grained element predictions"""
+            # Get active elements
+            active_elements = []
+            for idx in range(len(fine_pred)):
+                if fine_pred[idx] == 1:
+                    element_name = classes_inv[idx + 1]  # +1 because classes are 1-indexed
+                    active_elements.append(element_name)
+            
+            if not active_elements:
+                return None
+            
+            # Build label based on element categories
+            # Format: {player}_{court_position}_{action_type}_{hand}_{stroke_type}_{direction}_{formation}_{outcome}
+            player = None
+            court_position = None
+            action_type = None
+            hand = None
+            stroke_type = None
+            direction = None
+            formation = None
+            outcome = None
+            
+            # Player: near (0) or far (1)
+            if 'near' in active_elements:
+                player = 'near'
+            elif 'far' in active_elements:
+                player = 'far'
+            
+            # Court position: deuce (2), middle (3), ad (4)
+            if 'deuce' in active_elements:
+                court_position = 'deuce'
+            elif 'middle' in active_elements:
+                court_position = 'middle'
+            elif 'ad' in active_elements:
+                court_position = 'ad'
+            
+            # Action type: serve (5), return (6), stroke (7)
+            if 'serve' in active_elements:
+                action_type = 'serve'
+            elif 'return' in active_elements:
+                action_type = 'return'
+            elif 'stroke' in active_elements:
+                action_type = 'stroke'
+            
+            # Hand: fh (8) or bh (9) - only for non-serve actions
+            if action_type and action_type != 'serve':
+                if 'fh' in active_elements:
+                    hand = 'fh'
+                elif 'bh' in active_elements:
+                    hand = 'bh'
+            
+            # Stroke type: gs (10), slice (11), volley (12), smash (13), drop (14), lob (15)
+            # Only for non-serve actions
+            if action_type and action_type != 'serve':
+                if 'gs' in active_elements:
+                    stroke_type = 'gs'
+                elif 'slice' in active_elements:
+                    stroke_type = 'slice'
+                elif 'volley' in active_elements:
+                    stroke_type = 'volley'
+                elif 'smash' in active_elements:
+                    stroke_type = 'smash'
+                elif 'drop' in active_elements:
+                    stroke_type = 'drop'
+                elif 'lob' in active_elements:
+                    stroke_type = 'lob'
+            
+            # Direction: T (16), B (17), W (18), CC (19), DL (20), DM (21), II (22), IO (23)
+            direction_candidates = ['T', 'B', 'W', 'CC', 'DL', 'DM', 'II', 'IO']
+            for d in direction_candidates:
+                if d in active_elements:
+                    direction = d
+                    break
+            
+            # Formation: approach (24)
+            if 'approach' in active_elements:
+                formation = 'approach'
+            
+            # Outcome: in (25), winner (26), forced-err (27), unforced-err (28)
+            if 'in' in active_elements:
+                outcome = 'in'
+            elif 'winner' in active_elements:
+                outcome = 'winner'
+            elif 'forced-err' in active_elements:
+                outcome = 'forced-err'
+            elif 'unforced-err' in active_elements:
+                outcome = 'unforced-err'
+            
+            # Build label string
+            # Format: {player}_{court_position}_{action_type}_{hand}_{stroke_type}_{direction}_{formation}_{outcome}
+            parts = [
+                player or '-',
+                court_position or '-',
+                action_type or '-',
+                hand or '-',
+                stroke_type or '-',
+                direction or '-',
+                formation or '-',
+                outcome or '-'
+            ]
+            
+            label = '_'.join(parts)
+            
+            # Try to match against events.txt if available
+            if events_classes and label in events_classes:
+                return label
+            elif events_classes:
+                # If exact match not found, return the constructed label anyway
+                # (it might be a valid combination not in training set)
+                return label
+            else:
+                return label
+        
         # Generate annotations for each video
         annotations = {}
         for video in sorted(pred_dict.keys()):
@@ -340,9 +462,22 @@ def generate_annotations(metadata_file, frame_dir, model_dir, output_dir,
                 coarse_scores = non_maximum_suppression_np(coarse_scores, 5)
                 coarse_pred = np.argmax(coarse_scores, axis=1)
                 
-                # Process fine-grained predictions (simplified)
-                # For now, just use coarse predictions
-                pred = coarse_pred
+                # Process fine-grained predictions (same as evaluation code)
+                fine_pred = np.zeros_like(fine_scores, int)
+                for i in range(len(fine_scores)):
+                    # Select max from each element group
+                    for start, end in [[0, 2], [2, 5], [5, 8], [16, 24], [25, 29]]:
+                        max_idx = np.argmax(fine_scores[i, start:end])
+                        fine_pred[i, start + max_idx] = 1
+                    if fine_scores[i, 24] > 0.5:  # approach
+                        fine_pred[i, 24] = 1
+                    if fine_pred[i, 5] != 1:  # not a serve
+                        for start, end in [[8, 10], [10, 16]]:
+                            max_idx = np.argmax(fine_scores[i, start:end])
+                            fine_pred[i, start + max_idx] = 1
+                
+                # Only keep fine predictions where coarse is foreground
+                fine_pred = coarse_pred[:, np.newaxis] * fine_pred
             else:
                 scores, support = pred_dict[video]
                 scores = scores / support[:, None]  # Normalize by support
@@ -350,21 +485,36 @@ def generate_annotations(metadata_file, frame_dir, model_dir, output_dir,
             
             # Extract events
             events = []
-            for i in range(len(pred)):
-                if pred[i] != 0:  # Skip background
-                    if use_f3ed:
-                        score = float(coarse_scores[i, pred[i]])
-                    else:
+            for i in range(len(coarse_pred) if use_f3ed else len(pred)):
+                if use_f3ed:
+                    if coarse_pred[i] != 0:  # Skip background
+                        # Build composite label from fine-grained predictions
+                        event_label = build_event_label_from_elements(fine_pred[i], classes_inv)
+                        if event_label:
+                            # Calculate average score from active elements
+                            active_scores = []
+                            for idx in range(len(fine_pred[i])):
+                                if fine_pred[i, idx] == 1:
+                                    active_scores.append(float(fine_scores[i, idx]))
+                            score = float(np.mean(active_scores)) if active_scores else float(coarse_scores[i, coarse_pred[i]])
+                            
+                            events.append({
+                                'frame': i,
+                                'label': event_label,
+                                'score': score
+                            })
+                else:
+                    if pred[i] != 0:  # Skip background
                         score = float(scores[i, pred[i]])
-                    events.append({
-                        'frame': i,
-                        'label': classes_inv[pred[i]],
-                        'score': score
-                    })
+                        events.append({
+                            'frame': i,
+                            'label': classes_inv[pred[i]],
+                            'score': score
+                        })
             
             annotations[video] = {
                 'events': events,
-                'num_frames': len(pred),
+                'num_frames': len(coarse_pred) if use_f3ed else len(pred),
                 'num_events': len(events)
             }
         
