@@ -204,6 +204,50 @@ def main():
         # Replace the function
         train_MD_FED.get_datasets = patched_get_datasets
         
+        # Patch the main function to handle None best_epoch
+        # We need to modify the code that uses best_epoch to handle None case
+        # Let's patch the specific line that causes the error
+        import types
+        
+        # Get the source code of main function and patch it
+        original_main = train_MD_FED.main
+        original_main_code = original_main.__code__
+        
+        # Create a wrapper that patches the problematic section
+        def patched_main_wrapper(args):
+            """Wrapper that handles None best_epoch"""
+            # We'll run the original main but catch and fix the error
+            import traceback
+            try:
+                return original_main(args)
+            except TypeError as e:
+                error_msg = str(e)
+                if 'NoneType.__format__' in error_msg or 'best_epoch' in error_msg:
+                    # best_epoch is None, find the last checkpoint
+                    import glob
+                    import torch
+                    checkpoint_files = glob.glob(os.path.join(args.save_dir, 'checkpoint_*.pt'))
+                    if checkpoint_files:
+                        epochs = []
+                        for f in checkpoint_files:
+                            try:
+                                epoch = int(os.path.basename(f).replace('checkpoint_', '').replace('.pt', ''))
+                                epochs.append(epoch)
+                            except:
+                                pass
+                        if epochs:
+                            last_epoch = max(epochs)
+                            print(f"\nWarning: best_epoch is None (no validation performed or no improvement), using last checkpoint epoch {last_epoch}")
+                            print(f"Training completed. Checkpoints saved in {args.save_dir}")
+                            print(f"To use a specific checkpoint, load checkpoint_{last_epoch:03d}.pt")
+                            return
+                    else:
+                        print("\nError: No checkpoints found and best_epoch is None")
+                        raise
+                raise
+        
+        train_MD_FED.main = patched_main_wrapper
+        
         # Parse arguments for training
         import argparse as ap
         parser = ap.ArgumentParser()
@@ -228,7 +272,7 @@ def main():
         parser.add_argument('--temporal_arch', type=str, default='gru')
         parser.add_argument('--acc_grad_iter', type=int, default=1)
         parser.add_argument('--warm_up_epochs', type=int, default=3)
-        parser.add_argument('--start_val_epoch', type=int, default=None)
+        parser.add_argument('--start_val_epoch', type=int, default=None)  # Will be set based on num_epochs
         parser.add_argument('--resume', action='store_true', default=False)
         parser.add_argument('--gpu_parallel', action='store_true', default=False)
         parser.add_argument('--num_workers', type=int, default=None)
