@@ -172,19 +172,23 @@ def main():
                 num_train_samples = int(args.num_samples * 0.8)
                 num_val_samples = args.num_samples - num_train_samples
             
+            # For Stage 1, we only need skeleton data, so set frame_dir and flow_dir to None
+            frame_dir = None if args.stage == 1 else args.frame_dir
+            flow_dir = None if args.stage == 1 else args.flow_dir
+            
             train_data = ActionSeqDataset(
                 classes, train_json,
-                args.frame_dir, args.clip_len, dataset_len, is_eval=False, 
+                frame_dir, args.clip_len, dataset_len, is_eval=False, 
                 dilate_len=args.dilate_len, stage=args.stage,
-                num_samples=num_train_samples, flow_dir=args.flow_dir, pose_dir=args.pose_dir,
+                num_samples=num_train_samples, flow_dir=flow_dir, pose_dir=args.pose_dir,
                 **dataset_kwargs)
             train_data.print_info()
             
             val_data = ActionSeqDataset(
                 classes, val_json,
-                args.frame_dir, args.clip_len, dataset_len // 4, 
+                frame_dir, args.clip_len, dataset_len // 4, 
                 dilate_len=args.dilate_len, stage=args.stage, 
-                num_samples=num_val_samples, flow_dir=args.flow_dir, pose_dir=args.pose_dir,
+                num_samples=num_val_samples, flow_dir=flow_dir, pose_dir=args.pose_dir,
                 **dataset_kwargs)
             val_data.print_info()
             
@@ -192,8 +196,8 @@ def main():
             if args.criterion == 'edit':
                 val_data_frames = ActionSeqVideoDataset(
                     classes, val_json,
-                    args.frame_dir, args.clip_len, overlap_len=0, num_samples=num_val_samples,
-                    flow_dir=args.flow_dir, pose_dir=args.pose_dir, **dataset_kwargs)
+                    frame_dir, args.clip_len, overlap_len=0, num_samples=num_val_samples,
+                    flow_dir=flow_dir, pose_dir=args.pose_dir, **dataset_kwargs)
             
             return classes, train_data, val_data, None, val_data_frames
         
@@ -204,8 +208,8 @@ def main():
         import argparse as ap
         parser = ap.ArgumentParser()
         parser.add_argument('dataset', type=str)
-        parser.add_argument('--frame_dir', type=str, default=args.frame_dir)
-        parser.add_argument('--flow_dir', type=str, default=args.flow_dir)
+        parser.add_argument('--frame_dir', type=str, default=None)
+        parser.add_argument('--flow_dir', type=str, default=None)
         parser.add_argument('--pose_dir', type=str, default=os.path.abspath(args.pose_dir))
         parser.add_argument('--stage', type=int, default=1)
         parser.add_argument('--visual_arch', type=str, default=args.visual_arch)
@@ -229,11 +233,10 @@ def main():
         parser.add_argument('--gpu_parallel', action='store_true', default=False)
         parser.add_argument('--num_workers', type=int, default=None)
         
+        # For Stage 1, we only need skeleton data, so set frame_dir and flow_dir to None
         # Create args object
-        train_args = parser.parse_args([
+        cmd_args = [
             args.dataset,
-            '--frame_dir', args.frame_dir,
-            '--flow_dir', args.flow_dir,
             '--pose_dir', os.path.abspath(args.pose_dir),
             '--stage', '1',
             '--visual_arch', args.visual_arch,
@@ -242,7 +245,10 @@ def main():
             '--batch_size', str(args.batch_size),
             '--learning_rate', str(args.learning_rate),
             '-s', os.path.abspath(args.output_dir)
-        ])
+        ]
+        # Only add frame_dir and flow_dir if they are explicitly provided and not None
+        # For Stage 1, we don't need them, so we skip them
+        train_args = parser.parse_args(cmd_args)
         
         print("\n" + "="*60)
         print("Starting MD-FED Stage 1 training...")
