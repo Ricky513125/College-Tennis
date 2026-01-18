@@ -168,13 +168,18 @@ def load_raft_model(model_path, small=True, alternate_corr=False):
     """Load RAFT model"""
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     
-    # Create args object
+    # Create args object that supports 'in' operator (as used by RAFT)
+    # RAFT checks 'dropout' not in args, so we need a dict-like or custom class
     class Args:
         def __init__(self):
             self.small = small
             self.alternate_corr = alternate_corr
             self.mixed_precision = False
             self.dropout = 0
+        
+        def __contains__(self, key):
+            """Support 'in' operator for checking attributes"""
+            return hasattr(self, key)
     
     args = Args()
     
