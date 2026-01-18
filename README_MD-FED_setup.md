@@ -85,8 +85,11 @@ python run_md_fed_stage1.py \
     --output_dir md_fed_outputs/stage1 \
     --num_epochs 50 \
     --batch_size 4 \
-    --learning_rate 0.001
+    --learning_rate 0.001 \
+    --force
 ```
+
+**注意**：如果 `MD-FED/data/f3set-tennis-sub` 已经存在为目录，使用 `--force` 选项会自动备份现有目录并创建符号链接。
 
 这个脚本会：
 1. 自动在 `MD-FED/data/` 下创建符号链接指向当前目录的数据
