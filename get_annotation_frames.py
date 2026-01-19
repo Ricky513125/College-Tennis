@@ -7,21 +7,13 @@ ANNOTATION_FILE = "ncaa_annotations/annotations.json"
 FRAMES_ROOT = Path("ncaa_frames")
 OUTPUT_ROOT = Path("keyframes_compressed")
 
-JPEG_QUALITY = 75
-MAX_SIZE = 960
+JPEG_QUALITY = 90  # 保持较高清晰度，默认75压缩可能有点模糊
 # =========================
 
 OUTPUT_ROOT.mkdir(exist_ok=True, parents=True)
 
 with open(ANNOTATION_FILE, "r", encoding="utf-8") as f:
     annotations = json.load(f)
-
-def resize_keep_ratio(img, max_size):
-    w, h = img.size
-    scale = max_size / max(w, h)
-    if scale >= 1:
-        return img
-    return img.resize((int(w * scale), int(h * scale)), Image.BICUBIC)
 
 for ann in annotations:
     video_id = ann["video"]
@@ -42,7 +34,6 @@ for ann in annotations:
             continue
 
         img = Image.open(src).convert("RGB")
-        img = resize_keep_ratio(img, MAX_SIZE)
         img.save(dst, "JPEG", quality=JPEG_QUALITY, optimize=True)
 
     print(f"✅ Extracted {len(events)} keyframes for video {video_id}")
