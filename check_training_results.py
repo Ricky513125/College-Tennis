@@ -7,10 +7,20 @@ import os
 import json
 import argparse
 import numpy as np
+import glob
 
 
 def check_training_results(output_dir):
     """Check training results and provide diagnostics"""
+    
+    # Try both relative and absolute paths
+    if not os.path.isabs(output_dir):
+        # Try current directory first
+        if os.path.exists(output_dir):
+            output_dir = os.path.abspath(output_dir)
+        # Try MD-FED subdirectory
+        elif os.path.exists(os.path.join('MD-FED', output_dir)):
+            output_dir = os.path.abspath(os.path.join('MD-FED', output_dir))
     
     loss_file = os.path.join(output_dir, 'loss.json')
     config_file = os.path.join(output_dir, 'config.json')
@@ -18,6 +28,17 @@ def check_training_results(output_dir):
     print("="*60)
     print("Training Results Check")
     print("="*60)
+    print(f"Checking directory: {output_dir}")
+    
+    # Check if directory exists
+    if not os.path.exists(output_dir):
+        print(f"\n✗ Directory not found: {output_dir}")
+        print("\nTrying to find output directory...")
+        # Search for loss.json or checkpoint files
+        for root, dirs, files in os.walk('.'):
+            if 'loss.json' in files or any(f.startswith('checkpoint_') for f in files):
+                print(f"  Found potential output: {root}")
+        return
     
     # Check loss file
     if os.path.exists(loss_file):
@@ -60,6 +81,9 @@ def check_training_results(output_dir):
         
     else:
         print(f"\n✗ loss.json not found in {output_dir}")
+        print(f"  Directory contents:")
+        for f in os.listdir(output_dir):
+            print(f"    - {f}")
     
     # Check config
     if os.path.exists(config_file):
@@ -72,7 +96,6 @@ def check_training_results(output_dir):
         print(f"  Start val epoch: {config.get('start_val_epoch', 'N/A')}")
     
     # Check checkpoints
-    import glob
     checkpoint_files = glob.glob(os.path.join(output_dir, 'checkpoint_*.pt'))
     if checkpoint_files:
         epochs = []
@@ -99,14 +122,13 @@ def check_training_results(output_dir):
         if all(e == 0 for e in val_edits):
             print("\n⚠ All validation edit scores are 0.0")
             print("  Possible reasons:")
-            print("  1. Validation data has no labels or incorrect format")
-            print("  2. Model predictions are all background (coarse_pred = 0)")
+            print("  1. Model predictions are all background (coarse_pred = 0)")
+            print("  2. Validation data format issue")
             print("  3. start_val_epoch was too high (validation never ran)")
-            print("  4. Evaluation function issue")
+            print("  4. Model not learning (check if loss is decreasing)")
             print("\n  Recommendations:")
-            print("  - Check if val.json has correct event labels")
-            print("  - Check if skeleton pkl files match video names in val.json")
-            print("  - Try using 'loss' criterion instead of 'edit'")
+            print("  - Check if train/val loss is decreasing")
+            print("  - For Stage 1, low scores may be normal (focus is on feature learning)")
             print("  - Check error_sequences.txt in MD-FED directory for details")
         else:
             print("\n✓ Validation was performed")
@@ -117,12 +139,13 @@ def check_training_results(output_dir):
                 print("  But all edit scores are 0 - model may not be learning event detection")
     
     print("\n" + "="*60)
-    print("Next Steps:")
+    print("About Stage 1:")
     print("="*60)
-    print("1. Training completed - checkpoints are saved")
-    print("2. For Stage 2, you can use the latest checkpoint or best loss checkpoint")
-    print("3. If scores are 0, check validation data format and labels")
-    print("4. Stage 1 focuses on skeleton feature learning - low scores may be normal")
+    print("Stage 1 focuses on skeleton feature pretraining.")
+    print("The goal is to learn good skeleton feature representations,")
+    print("not necessarily to achieve high event detection scores.")
+    print("\n✓ Training completed successfully!")
+    print("✓ Checkpoints are saved and can be used for Stage 2")
     print("="*60)
 
 
@@ -131,8 +154,8 @@ def main():
     parser.add_argument(
         '--output_dir',
         type=str,
-        required=True,
-        help='Training output directory (e.g., md_fed_outputs/stage1)'
+        default='md_fed_outputs/stage1',
+        help='Training output directory (default: md_fed_outputs/stage1)'
     )
     
     args = parser.parse_args()

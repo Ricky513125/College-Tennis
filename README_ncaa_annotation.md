@@ -204,3 +204,13 @@ python run_full_pipeline.py \
 - `loss.json` (optional) - Training loss history
 
 This will process all videos and create annotation files in `./ncaa_annotations/annotations.json`.
+
+
+
+python generate_annotations.py \
+    --metadata ./ncaa_annotations/ncaa_videos_metadata.json \
+    --frame_dir ./ncaa_frames \
+    --model_dir ./F3Set/f3set-model/f3ed \
+    --output_dir ./ncaa_annotations \
+    --dataset f3set-tennis
+    --use_f3ed
