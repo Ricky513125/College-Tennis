@@ -129,8 +129,13 @@ def process_videos(video_path, output_dir, frame_dir):
     # Check if it's a file or directory
     if video_path.is_file():
         # Single video file
-        video_extensions = ['.mp4', '.avi', '.mov', '.mkv']
-        if video_path.suffix.lower() in video_extensions:
+        video_extensions = ['.mp4', '.avi', '.mov', '.mkv', 'mp4', 'avi', 'mov', 'mkv']
+        file_ext = video_path.suffix.lower()
+        file_name_lower = video_path.name.lower()
+        # Check if extension matches (with or without dot)
+        is_video = (file_ext in video_extensions or 
+                   any(file_name_lower.endswith(ext) for ext in video_extensions))
+        if is_video:
             video_files = [video_path]
         else:
             print(f"Error: {video_path} is not a supported video file")
