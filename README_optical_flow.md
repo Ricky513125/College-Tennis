@@ -37,6 +37,15 @@ python generate_optical_flow.py \
     --model_path ./RAFT/models/raft-small.pth \
     --output_dir ./ncaa_optical_flow \
     --use_frames
+
+
+python generate_optical_flow.py \
+    ./ncaa_frames/Hoole_SC_vs_Dong_LSU \
+    --video_id Hoole_SC_vs_Dong_LSU.mp4 \
+    --model_path ./RAFT/models/raft-small.pth \
+    --output_dir ./ncaa_optical_flow \
+    --use_frames
+
 ```
 
 ## 参数说明

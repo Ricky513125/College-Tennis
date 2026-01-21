@@ -98,6 +98,12 @@ python generate_skeleton_annotations.py \
     ../ncaa_videos/RUokidaZR30.mp4 \
     --model_path ./deep-high-resolution-net.pytorch/models/pose_hrnet_w48_384x288.pth \
     --output ./RUokidaZR30_skeleton.json
+
+python generate_skeleton_annotations.py \
+    ../ncaa_videos/Hoole_SC_vs_Dong_LSU.mp4 \
+    --model_path ./deep-high-resolution-net.pytorch/models/pose_hrnet_w48_384x288.pth \
+    --output ./Hoole_SC_vs_Dong_LSU_skeleton.json
+
 ```
 
 ### 批量处理
