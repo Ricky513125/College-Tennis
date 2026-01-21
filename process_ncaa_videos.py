@@ -109,17 +109,16 @@ def create_video_metadata(video_path, video_id, num_frames, fps, width, height):
     }
 
 
-def process_videos(video_dir, output_dir, frame_dir):
+def process_videos(video_path, output_dir, frame_dir):
     """
-    Process all videos in the video directory.
+    Process video(s) - either a single video file or all videos in a directory.
     
     Args:
-        video_dir: Directory containing input videos
+        video_path: Path to a single video file or directory containing videos
         output_dir: Directory to save outputs
         frame_dir: Directory to save extracted frames
-        model_dir: Directory containing the trained model
     """
-    video_dir = Path(video_dir)
+    video_path = Path(video_path)
     output_dir = Path(output_dir)
     frame_dir = Path(frame_dir)
     
@@ -127,15 +126,28 @@ def process_videos(video_dir, output_dir, frame_dir):
     frame_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Find all video files
-    video_extensions = ['.mp4', '.avi', '.mov', '.mkv']
-    video_files = []
-    for ext in video_extensions:
-        video_files.extend(list(video_dir.glob(f'*{ext}')))
-        video_files.extend(list(video_dir.glob(f'*{ext.upper()}')))
-    
-    if not video_files:
-        print(f"No video files found in {video_dir}")
+    # Check if it's a file or directory
+    if video_path.is_file():
+        # Single video file
+        video_extensions = ['.mp4', '.avi', '.mov', '.mkv']
+        if video_path.suffix.lower() in video_extensions:
+            video_files = [video_path]
+        else:
+            print(f"Error: {video_path} is not a supported video file")
+            return None
+    elif video_path.is_dir():
+        # Directory - find all video files
+        video_extensions = ['.mp4', '.avi', '.mov', '.mkv']
+        video_files = []
+        for ext in video_extensions:
+            video_files.extend(list(video_path.glob(f'*{ext}')))
+            video_files.extend(list(video_path.glob(f'*{ext.upper()}')))
+        
+        if not video_files:
+            print(f"No video files found in {video_path}")
+            return None
+    else:
+        print(f"Error: {video_path} does not exist")
         return None
     
     print(f"Found {len(video_files)} video(s) to process")
@@ -185,7 +197,7 @@ def main():
         '--video_dir',
         type=str,
         default='../ncaa_videos',
-        help='Directory containing input videos (default: ../ncaa_videos)'
+        help='Path to a single video file or directory containing input videos (default: ../ncaa_videos)'
     )
     parser.add_argument(
         '--output_dir',
@@ -203,20 +215,20 @@ def main():
     args = parser.parse_args()
     
     # Convert to absolute paths
-    video_dir = os.path.abspath(args.video_dir)
+    video_path = os.path.abspath(args.video_dir)
     output_dir = os.path.abspath(args.output_dir)
     frame_dir = os.path.abspath(args.frame_dir)
     
-    print(f"Video directory: {video_dir}")
+    print(f"Video path: {video_path}")
     print(f"Output directory: {output_dir}")
     print(f"Frame directory: {frame_dir}")
     
-    if not os.path.exists(video_dir):
-        print(f"Error: Video directory does not exist: {video_dir}")
+    if not os.path.exists(video_path):
+        print(f"Error: Video path does not exist: {video_path}")
         return
     
     # Process videos
-    metadata_file = process_videos(video_dir, output_dir, frame_dir)
+    metadata_file = process_videos(video_path, output_dir, frame_dir)
     
     if metadata_file:
         print(f"\nNext step: Run inference using:")
