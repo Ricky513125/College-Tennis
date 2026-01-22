@@ -259,16 +259,20 @@ def process_manual_rallies(config_file, output_dir, frame_dir, base_video_id=Non
             end_time = rally['end_time']
             duration = end_time - start_time
             
+            # Create full video_id with video name prefix: video_name/rally_id
+            full_rally_id = f"{base_video_id_current}/{rally_id}"
+            
             try:
-                # Extract frames
+                # Extract frames (will be saved to frame_dir/video_name/rally_id/)
                 num_frames, fps, width, height = extract_frames_from_video(
-                    video_path, str(frame_dir), rally_id,
+                    video_path, str(frame_dir), full_rally_id,
                     start_time=start_time, end_time=end_time
                 )
                 
                 # Create metadata with optional player information
+                # Use full_rally_id for video field to match frame directory structure
                 metadata = create_video_metadata(
-                    video_path, rally_id, num_frames, fps, width, height,
+                    video_path, full_rally_id, num_frames, fps, width, height,
                     far_name=rally.get('far_name', 'Unknown'),
                     far_hand=rally.get('far_hand', 'RH'),
                     near_name=rally.get('near_name', 'Unknown'),
