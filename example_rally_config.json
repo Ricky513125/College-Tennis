@@ -53,7 +53,7 @@
     ]
   },
   {
-    "video_path": "../ncaa_videos/Hoole (SC) vs Dong (LSU).mp4",
+    "video_path": "../ncaa_videos/Hoole_SC_vs_Dong_LSU.mp4",
     "rallies": [
       { "rally_id": "rally_0303_0320", "start_time": 183.0, "end_time": 200.0 },
       { "rally_id": "rally_0337_0343", "start_time": 217.0, "end_time": 223.0 },
