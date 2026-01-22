@@ -44,26 +44,34 @@ def detect_scenes(video_path, threshold=30.0, min_scene_len=1.0, max_scene_len=6
         max_duration: Maximum duration in seconds to process (None = process entire video)
     
     Returns:
-        list: List of (start_time, end_time) tuples in seconds
+        list: List of (start_time, end_time) tuples in seconds, or None if detection fails
     """
     if not SCENEDETECT_AVAILABLE:
         raise ImportError("pyscenedetect is required for scene detection. Install with: pip install scenedetect[opencv]")
     
-    # Create video manager and scene manager
-    video_manager = VideoManager([str(video_path)])
-    scene_manager = SceneManager()
-    
-    # Add content detector (detects scene changes based on content differences)
-    scene_manager.add_detector(ContentDetector(threshold=threshold, min_scene_len=min_scene_len))
-    
-    # Start detection (we'll filter by max_duration after detection)
-    video_manager.set_duration()
-    video_manager.start()
-    scene_manager.detect_scenes(frame_source=video_manager)
-    
-    # Get scene list
-    scene_list = scene_manager.get_scene_list()
-    video_manager.release()
+    try:
+        # Create video manager and scene manager
+        video_manager = VideoManager([str(video_path)])
+        scene_manager = SceneManager()
+        
+        # Add content detector (detects scene changes based on content differences)
+        # Use simpler approach: just pass threshold, let ContentDetector handle min_scene_len internally
+        scene_manager.add_detector(ContentDetector(threshold=threshold))
+        
+        # Start detection (we'll filter by max_duration after detection)
+        video_manager.set_duration()
+        video_manager.start()
+        scene_manager.detect_scenes(frame_source=video_manager)
+        
+        # Get scene list
+        scene_list = scene_manager.get_scene_list()
+        video_manager.release()
+    except Exception as e:
+        print(f"Error during scene detection: {e}")
+        import traceback
+        traceback.print_exc()
+        print("Falling back to processing entire video without scene detection.")
+        return None
     
     # Filter scenes by length (rally clips are typically 5-30 seconds)
     # Very short scenes (< 2s) are likely cuts/transitions
@@ -283,9 +291,23 @@ def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=Tru
                     max_scene_len=max_scene_len,
                     max_duration=max_duration
                 )
-                print(f"Found {len(scenes)} potential rally clips")
                 
-                if len(scenes) == 0:
+                # If scene detection failed, fall back to processing entire video
+                if scenes is None:
+                    print(f"Scene detection failed for {video_path.name}. Processing entire video.")
+                    # Process entire video without scene detection
+                    video_id = base_video_id
+                    num_frames, fps, width, height = extract_frames_from_video(
+                        str(video_path), str(frame_dir), video_id,
+                        max_duration=max_duration
+                    )
+                    metadata = create_video_metadata(
+                        str(video_path), video_id, num_frames, fps, width, height
+                    )
+                    video_metadata.append(metadata)
+                    duration_info = f" (first {max_duration/60:.1f} min)" if max_duration else ""
+                    print(f"Processed {video_path.name}{duration_info}: {num_frames} frames, {fps:.2f} fps")
+                elif len(scenes) == 0:
                     print(f"Warning: No scenes detected in {video_path.name}. Processing entire video.")
                     # Fall back to processing entire video (with max_duration limit)
                     video_id = base_video_id
@@ -300,6 +322,7 @@ def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=Tru
                     duration_info = f" (first {max_duration/60:.1f} min)" if max_duration else ""
                     print(f"Processed {video_path.name}{duration_info}: {num_frames} frames, {fps:.2f} fps")
                 else:
+                    print(f"Found {len(scenes)} potential rally clips")
                     # Process each detected scene as a separate clip
                     for clip_idx, (start_time, end_time) in enumerate(scenes):
                         clip_id = f"{base_video_id}_clip{clip_idx:03d}"

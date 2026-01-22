@@ -1,0 +1,135 @@
+[
+  {
+    "video_path": "../ncaa_videos/6VSmpCSgY7M.mp4",
+    "rallies": [
+      { "rally_id": "rally_0540_0550", "start_time": 340.0, "end_time": 350.0 },
+      { "rally_id": "rally_0605_0610", "start_time": 365.0, "end_time": 370.0 },
+      { "rally_id": "rally_0623_0630", "start_time": 383.0, "end_time": 390.0 },
+      { "rally_id": "rally_0640_0650", "start_time": 400.0, "end_time": 410.0 },
+      { "rally_id": "rally_0703_0710", "start_time": 423.0, "end_time": 430.0 },
+      { "rally_id": "rally_0725_0731", "start_time": 445.0, "end_time": 451.0 },
+      { "rally_id": "rally_0830_0838", "start_time": 510.0, "end_time": 518.0 },
+      { "rally_id": "rally_0855_0905", "start_time": 535.0, "end_time": 545.0 },
+      { "rally_id": "rally_0927_0931", "start_time": 567.0, "end_time": 571.0 },
+      { "rally_id": "rally_0954_0959", "start_time": 594.0, "end_time": 599.0 },
+      { "rally_id": "rally_1020_1033", "start_time": 620.0, "end_time": 633.0 },
+      { "rally_id": "rally_1056_1059", "start_time": 656.0, "end_time": 659.0 },
+      { "rally_id": "rally_1114_1122", "start_time": 674.0, "end_time": 682.0 },
+      { "rally_id": "rally_1143_1146", "start_time": 703.0, "end_time": 706.0 }
+    ]
+  },
+  {
+    "video_path": "../ncaa_videos/Avendano (UL) Vs. Penzlin (LSU).mp4",
+    "rallies": [
+      { "rally_id": "rally_0600_0620", "start_time": 360.0, "end_time": 380.0 },
+      { "rally_id": "rally_0636_0657", "start_time": 396.0, "end_time": 417.0 },
+      { "rally_id": "rally_0715_0722", "start_time": 435.0, "end_time": 442.0 },
+      { "rally_id": "rally_0736_0752", "start_time": 456.0, "end_time": 472.0 },
+      { "rally_id": "rally_0811_0830", "start_time": 491.0, "end_time": 510.0 },
+      { "rally_id": "rally_0850_0855", "start_time": 530.0, "end_time": 535.0 },
+      { "rally_id": "rally_1003_1012", "start_time": 603.0, "end_time": 612.0 },
+      { "rally_id": "rally_1024_1038", "start_time": 624.0, "end_time": 638.0 },
+      { "rally_id": "rally_1103_1112", "start_time": 663.0, "end_time": 672.0 },
+      { "rally_id": "rally_1127_1131", "start_time": 687.0, "end_time": 691.0 },
+      { "rally_id": "rally_1137_1152", "start_time": 697.0, "end_time": 712.0 },
+      { "rally_id": "rally_1243_1305", "start_time": 763.0, "end_time": 785.0 },
+      { "rally_id": "rally_1330_1340", "start_time": 810.0, "end_time": 820.0 }
+    ]
+  },
+  {
+    "video_path": "../ncaa_videos/dwPey52i1LE.mp4",
+    "rallies": [
+      { "rally_id": "rally_0553_0600", "start_time": 353.0, "end_time": 360.0 },
+      { "rally_id": "rally_0614_0635", "start_time": 374.0, "end_time": 395.0 },
+      { "rally_id": "rally_0703_0707", "start_time": 423.0, "end_time": 427.0 },
+      { "rally_id": "rally_0716_0735", "start_time": 436.0, "end_time": 455.0 },
+      { "rally_id": "rally_0806_0814", "start_time": 486.0, "end_time": 494.0 },
+      { "rally_id": "rally_0830_0834", "start_time": 510.0, "end_time": 514.0 },
+      { "rally_id": "rally_0837_0900", "start_time": 517.0, "end_time": 540.0 },
+      { "rally_id": "rally_1002_1014", "start_time": 602.0, "end_time": 614.0 },
+      { "rally_id": "rally_1037_1050", "start_time": 637.0, "end_time": 650.0 },
+      { "rally_id": "rally_1110_1130", "start_time": 670.0, "end_time": 690.0 },
+      { "rally_id": "rally_1147_1158", "start_time": 707.0, "end_time": 718.0 }
+    ]
+  },
+  {
+    "video_path": "../ncaa_videos/Hoole (SC) vs Dong (LSU).mp4",
+    "rallies": [
+      { "rally_id": "rally_0303_0320", "start_time": 183.0, "end_time": 200.0 },
+      { "rally_id": "rally_0337_0343", "start_time": 217.0, "end_time": 223.0 },
+      { "rally_id": "rally_0402_0411", "start_time": 242.0, "end_time": 251.0 },
+      { "rally_id": "rally_0333_0337", "start_time": 213.0, "end_time": 217.0 },
+      { "rally_id": "rally_0452_0457", "start_time": 292.0, "end_time": 297.0 },
+      { "rally_id": "rally_0600_0610", "start_time": 360.0, "end_time": 370.0 },
+      { "rally_id": "rally_0637_0640", "start_time": 397.0, "end_time": 400.0 },
+      { "rally_id": "rally_0649_0654", "start_time": 409.0, "end_time": 414.0 },
+      { "rally_id": "rally_0727_0743", "start_time": 447.0, "end_time": 463.0 },
+      { "rally_id": "rally_0800_0803", "start_time": 480.0, "end_time": 483.0 },
+      { "rally_id": "rally_0810_0819", "start_time": 490.0, "end_time": 499.0 },
+      { "rally_id": "rally_0844_0849", "start_time": 524.0, "end_time": 529.0 },
+      { "rally_id": "rally_0900_0907", "start_time": 540.0, "end_time": 547.0 },
+      { "rally_id": "rally_0929_0939", "start_time": 569.0, "end_time": 579.0 }
+    ]
+  },
+  {
+    "video_path": "../ncaa_videos/IohTeru65U4.mp4",
+    "rallies": [
+      { "rally_id": "rally_0634_0642", "start_time": 394.0, "end_time": 402.0 },
+      { "rally_id": "rally_0715_0722", "start_time": 435.0, "end_time": 442.0 },
+      { "rally_id": "rally_0735_0740", "start_time": 455.0, "end_time": 460.0 },
+      { "rally_id": "rally_0800_0803", "start_time": 480.0, "end_time": 483.0 },
+      { "rally_id": "rally_0819_0824", "start_time": 499.0, "end_time": 504.0 },
+      { "rally_id": "rally_0938_0942", "start_time": 578.0, "end_time": 582.0 },
+      { "rally_id": "rally_0949_1000", "start_time": 589.0, "end_time": 600.0 },
+      { "rally_id": "rally_1015_1019", "start_time": 615.0, "end_time": 619.0 },
+      { "rally_id": "rally_1030_1042", "start_time": 630.0, "end_time": 642.0 },
+      { "rally_id": "rally_1100_1104", "start_time": 660.0, "end_time": 664.0 },
+      { "rally_id": "rally_1117_1125", "start_time": 677.0, "end_time": 685.0 },
+      { "rally_id": "rally_1147_1155", "start_time": 707.0, "end_time": 715.0 },
+      { "rally_id": "rally_1210_1219", "start_time": 730.0, "end_time": 739.0 }
+    ]
+  },
+  {
+    "video_path": "../ncaa_videos/Lc9MSf6vHxU.mp4",
+    "rallies": [
+      { "rally_id": "rally_0457_0510", "start_time": 297.0, "end_time": 310.0 },
+      { "rally_id": "rally_0527_0531", "start_time": 327.0, "end_time": 331.0 },
+      { "rally_id": "rally_0546_0549", "start_time": 346.0, "end_time": 349.0 },
+      { "rally_id": "rally_0555_0605", "start_time": 355.0, "end_time": 365.0 },
+      { "rally_id": "rally_0640_0645", "start_time": 400.0, "end_time": 405.0 },
+      { "rally_id": "rally_0656_0704", "start_time": 416.0, "end_time": 424.0 },
+      { "rally_id": "rally_0726_0731", "start_time": 446.0, "end_time": 451.0 },
+      { "rally_id": "rally_0740_0748", "start_time": 460.0, "end_time": 468.0 },
+      { "rally_id": "rally_0810_0818", "start_time": 490.0, "end_time": 498.0 },
+      { "rally_id": "rally_0908_0915", "start_time": 548.0, "end_time": 555.0 },
+      { "rally_id": "rally_0928_0938", "start_time": 568.0, "end_time": 578.0 },
+      { "rally_id": "rally_0951_1002", "start_time": 591.0, "end_time": 602.0 },
+      { "rally_id": "rally_1022_1026", "start_time": 622.0, "end_time": 626.0 },
+      { "rally_id": "rally_1035_1042", "start_time": 635.0, "end_time": 642.0 },
+      { "rally_id": "rally_1052_1058", "start_time": 652.0, "end_time": 658.0 },
+      { "rally_id": "rally_1124_1132", "start_time": 684.0, "end_time": 692.0 },
+      { "rally_id": "rally_1205_1210", "start_time": 725.0, "end_time": 730.0 }
+    ]
+  },
+  {
+    "video_path": "../ncaa_videos/RUokidaZR30.mp4",
+    "rallies": [
+      { "rally_id": "rally_0818_0833", "start_time": 498.0, "end_time": 513.0 },
+      { "rally_id": "rally_0857_0903", "start_time": 537.0, "end_time": 543.0 },
+      { "rally_id": "rally_0912_0935", "start_time": 552.0, "end_time": 575.0 },
+      { "rally_id": "rally_1002_1008", "start_time": 602.0, "end_time": 608.0 },
+      { "rally_id": "rally_1015_1033", "start_time": 615.0, "end_time": 633.0 },
+      { "rally_id": "rally_1112_1142", "start_time": 672.0, "end_time": 702.0 },
+      { "rally_id": "rally_1207_1212", "start_time": 727.0, "end_time": 732.0 },
+      { "rally_id": "rally_1220_1235", "start_time": 740.0, "end_time": 755.0 },
+      { "rally_id": "rally_1351_1359", "start_time": 831.0, "end_time": 839.0 },
+      { "rally_id": "rally_1414_1431", "start_time": 854.0, "end_time": 871.0 },
+      { "rally_id": "rally_1454_1510", "start_time": 894.0, "end_time": 910.0 },
+      { "rally_id": "rally_1537_1541", "start_time": 937.0, "end_time": 941.0 },
+      { "rally_id": "rally_1545_1555", "start_time": 945.0, "end_time": 955.0 },
+      { "rally_id": "rally_1627_1634", "start_time": 987.0, "end_time": 994.0 },
+      { "rally_id": "rally_1655_1700", "start_time": 1015.0, "end_time": 1020.0 },
+      { "rally_id": "rally_1706_1720", "start_time": 1026.0, "end_time": 1040.0 }
+    ]
+  }
+]

@@ -40,6 +40,29 @@ python process_ncaa_videos.py \
     --video_dir ../ncaa_videos \
     --output_dir ./ncaa_annotations \
     --frame_dir ./ncaa_frames
+
+
+    # 使用场景检测（默认启用）
+python process_ncaa_videos.py \
+    --video_dir ../ncaa_videos \
+    --output_dir ./ncaa_clip_annotations \
+    --frame_dir ./ncaa_clip_frames
+
+# 如果需要调整检测参数
+python process_ncaa_videos.py \
+    --video_dir "../ncaa_videos/Hoole (SC) vs. Dong (LSU)mp4" \
+    --output_dir ./ncaa_annotations \
+    --frame_dir ./ncaa_frames \
+    --scene_threshold 25.0 \
+    --min_scene_len 3.0 \
+    --max_scene_len 45.0
+
+# 如果不想使用场景检测（处理整个视频）
+python process_ncaa_videos.py \
+    --video_dir "../ncaa_videos/Hoole (SC) vs. Dong (LSU)mp4" \
+    --output_dir ./ncaa_annotations \
+    --frame_dir ./ncaa_frames \
+    --no_scene_detection
 ```
 
 ### 步骤2: 生成标注
