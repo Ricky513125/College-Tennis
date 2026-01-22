@@ -135,97 +135,88 @@ def load_rally_config(config_file):
     """
     Load rally configuration from JSON file.
     
-    Expected format:
+    Supports two formats:
+    
+    1. Single video format:
     {
         "video_path": "path/to/video.mp4",
-        "rallies": [
-            {
-                "rally_id": "rally_001",
-                "start_time": 120.5,
-                "end_time": 145.3,
-                "far_name": "Player A",
-                "far_hand": "RH",
-                "near_name": "Player B",
-                "near_hand": "LH",
-                "far_set": 1,
-                "far_game": 2,
-                "far_point": 2,
-                "near_set": 1,
-                "near_game": 2,
-                "near_point": 0
-            },
-            ...
-        ]
+        "rallies": [...]
     }
     
-    Or simpler format:
-    {
-        "video_path": "path/to/video.mp4",
-        "rallies": [
-            {
-                "rally_id": "rally_001",
-                "start_time": 120.5,
-                "end_time": 145.3
-            },
-            ...
-        ]
-    }
+    2. Multiple videos format (array):
+    [
+        {
+            "video_path": "path/to/video1.mp4",
+            "rallies": [...]
+        },
+        {
+            "video_path": "path/to/video2.mp4",
+            "rallies": [...]
+        }
+    ]
     
     Args:
         config_file: Path to JSON configuration file
     
     Returns:
-        dict: Configuration dictionary
+        list: List of configuration dictionaries (normalized to array format)
     """
     with open(config_file, 'r', encoding='utf-8') as f:
         config = json.load(f)
     
-    # Validate configuration
-    if 'video_path' not in config:
-        raise ValueError("Configuration must contain 'video_path'")
-    if 'rallies' not in config:
-        raise ValueError("Configuration must contain 'rallies' list")
-    if not isinstance(config['rallies'], list):
-        raise ValueError("'rallies' must be a list")
+    # Normalize to array format
+    if isinstance(config, list):
+        configs = config
+    elif isinstance(config, dict):
+        # Single video format - convert to array
+        configs = [config]
+    else:
+        raise ValueError("Configuration must be either a dict or a list of dicts")
     
-    # Validate each rally
-    for i, rally in enumerate(config['rallies']):
-        if 'start_time' not in rally or 'end_time' not in rally:
-            raise ValueError(f"Rally {i} must have 'start_time' and 'end_time'")
-        if rally['start_time'] >= rally['end_time']:
-            raise ValueError(f"Rally {i}: start_time ({rally['start_time']}) must be < end_time ({rally['end_time']})")
-        if rally['start_time'] < 0:
-            raise ValueError(f"Rally {i}: start_time must be >= 0")
+    # Validate each configuration
+    validated_configs = []
+    for config_idx, config in enumerate(configs):
+        if 'video_path' not in config:
+            raise ValueError(f"Configuration {config_idx} must contain 'video_path'")
+        if 'rallies' not in config:
+            raise ValueError(f"Configuration {config_idx} must contain 'rallies' list")
+        if not isinstance(config['rallies'], list):
+            raise ValueError(f"Configuration {config_idx}: 'rallies' must be a list")
+        
+        # Validate each rally
+        for i, rally in enumerate(config['rallies']):
+            if 'start_time' not in rally or 'end_time' not in rally:
+                raise ValueError(f"Configuration {config_idx}, Rally {i} must have 'start_time' and 'end_time'")
+            if rally['start_time'] >= rally['end_time']:
+                raise ValueError(f"Configuration {config_idx}, Rally {i}: start_time ({rally['start_time']}) must be < end_time ({rally['end_time']})")
+            if rally['start_time'] < 0:
+                raise ValueError(f"Configuration {config_idx}, Rally {i}: start_time must be >= 0")
+        
+        validated_configs.append(config)
     
-    return config
+    return validated_configs
 
 
 def process_manual_rallies(config_file, output_dir, frame_dir, base_video_id=None):
     """
-    Process video with manually specified rally time segments.
+    Process video(s) with manually specified rally time segments.
+    Supports both single video and multiple videos configuration.
     
     Args:
         config_file: Path to JSON configuration file with rally segments
         output_dir: Directory to save outputs
         frame_dir: Directory to save extracted frames
         base_video_id: Base identifier for video (if None, derived from video filename)
+                       Only used for single video format
     
     Returns:
         Path to metadata JSON file
     """
     # Load configuration
     print(f"Loading rally configuration from {config_file}...")
-    config = load_rally_config(config_file)
+    configs = load_rally_config(config_file)
     
-    video_path = Path(config['video_path'])
-    if not video_path.exists():
-        # Try relative to config file directory
-        config_dir = Path(config_file).parent
-        video_path = config_dir / config['video_path']
-        if not video_path.exists():
-            raise FileNotFoundError(f"Video file not found: {config['video_path']}")
-    
-    video_path = str(video_path.resolve())
+    print(f"Found {len(configs)} video(s) to process")
     
     # Create output directories
     output_dir = Path(output_dir)
@@ -233,63 +224,83 @@ def process_manual_rallies(config_file, output_dir, frame_dir, base_video_id=Non
     output_dir.mkdir(parents=True, exist_ok=True)
     frame_dir.mkdir(parents=True, exist_ok=True)
     
-    # Get base video ID
-    if base_video_id is None:
-        base_video_id = os.path.splitext(os.path.basename(video_path))[0]
-        # Clean video ID (remove special characters)
-        base_video_id = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in base_video_id)
+    # Process all videos
+    all_video_metadata = []
+    config_dir = Path(config_file).parent
     
-    print(f"Processing video: {video_path}")
-    print(f"Found {len(config['rallies'])} rally segments")
-    
-    # Process each rally
-    video_metadata = []
-    for rally_idx, rally in enumerate(tqdm(config['rallies'], desc="Processing rallies")):
-        rally_id = rally.get('rally_id', f"{base_video_id}_rally{rally_idx+1:03d}")
-        start_time = rally['start_time']
-        end_time = rally['end_time']
-        duration = end_time - start_time
+    for video_idx, config in enumerate(configs):
+        video_path = Path(config['video_path'])
+        if not video_path.exists():
+            # Try relative to config file directory
+            video_path = config_dir / config['video_path']
+            if not video_path.exists():
+                print(f"Warning: Video file not found: {config['video_path']}, skipping...")
+                continue
         
-        print(f"\nProcessing {rally_id}: {start_time:.2f}s - {end_time:.2f}s ({duration:.2f}s)")
+        video_path = str(video_path.resolve())
         
-        try:
-            # Extract frames
-            num_frames, fps, width, height = extract_frames_from_video(
-                video_path, str(frame_dir), rally_id,
-                start_time=start_time, end_time=end_time
-            )
+        # Get base video ID
+        if base_video_id is None or len(configs) > 1:
+            # Use video filename for base ID
+            base_video_id_current = os.path.splitext(os.path.basename(video_path))[0]
+            # Clean video ID (remove special characters)
+            base_video_id_current = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in base_video_id_current)
+        else:
+            base_video_id_current = base_video_id
+        
+        print(f"\n{'='*60}")
+        print(f"Processing video {video_idx+1}/{len(configs)}: {os.path.basename(video_path)}")
+        print(f"Found {len(config['rallies'])} rally segments")
+        
+        # Process each rally
+        for rally_idx, rally in enumerate(tqdm(config['rallies'], desc=f"  Video {video_idx+1} rallies")):
+            rally_id = rally.get('rally_id', f"{base_video_id_current}_rally{rally_idx+1:03d}")
+            start_time = rally['start_time']
+            end_time = rally['end_time']
+            duration = end_time - start_time
             
-            # Create metadata with optional player information
-            metadata = create_video_metadata(
-                video_path, rally_id, num_frames, fps, width, height,
-                far_name=rally.get('far_name', 'Unknown'),
-                far_hand=rally.get('far_hand', 'RH'),
-                near_name=rally.get('near_name', 'Unknown'),
-                near_hand=rally.get('near_hand', 'RH'),
-                far_set=rally.get('far_set', 0),
-                far_game=rally.get('far_game', 0),
-                far_point=rally.get('far_point', 0),
-                near_set=rally.get('near_set', 0),
-                near_game=rally.get('near_game', 0),
-                near_point=rally.get('near_point', 0)
-            )
-            video_metadata.append(metadata)
-            
-            print(f"  Extracted {num_frames} frames, {fps:.2f} fps")
-            
-        except Exception as e:
-            print(f"Error processing {rally_id}: {e}")
-            import traceback
-            traceback.print_exc()
-            continue
+            try:
+                # Extract frames
+                num_frames, fps, width, height = extract_frames_from_video(
+                    video_path, str(frame_dir), rally_id,
+                    start_time=start_time, end_time=end_time
+                )
+                
+                # Create metadata with optional player information
+                metadata = create_video_metadata(
+                    video_path, rally_id, num_frames, fps, width, height,
+                    far_name=rally.get('far_name', 'Unknown'),
+                    far_hand=rally.get('far_hand', 'RH'),
+                    near_name=rally.get('near_name', 'Unknown'),
+                    near_hand=rally.get('near_hand', 'RH'),
+                    far_set=rally.get('far_set', 0),
+                    far_game=rally.get('far_game', 0),
+                    far_point=rally.get('far_point', 0),
+                    near_set=rally.get('near_set', 0),
+                    near_game=rally.get('near_game', 0),
+                    near_point=rally.get('near_point', 0)
+                )
+                all_video_metadata.append(metadata)
+                
+            except Exception as e:
+                print(f"Error processing {rally_id}: {e}")
+                import traceback
+                traceback.print_exc()
+                continue
     
     # Save metadata JSON
-    metadata_file = output_dir / f'{base_video_id}_metadata.json'
-    with open(metadata_file, 'w', encoding='utf-8') as f:
-        json.dump(video_metadata, f, indent=2, ensure_ascii=False)
+    if len(configs) == 1 and base_video_id:
+        metadata_filename = f'{base_video_id}_metadata.json'
+    else:
+        metadata_filename = 'rallies_metadata.json'
     
-    print(f"\nSaved metadata to {metadata_file}")
-    print(f"Total rallies processed: {len(video_metadata)}")
+    metadata_file = output_dir / metadata_filename
+    with open(metadata_file, 'w', encoding='utf-8') as f:
+        json.dump(all_video_metadata, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n{'='*60}")
+    print(f"Saved metadata to {metadata_file}")
+    print(f"Total rallies processed: {len(all_video_metadata)}")
     
     return metadata_file
 
