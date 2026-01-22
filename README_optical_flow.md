@@ -11,7 +11,28 @@
 
 ## 使用方法
 
-### 批量处理6个视频（推荐）
+### 处理手动指定的Rally（推荐）
+
+如果你已经使用 `process_manual_rallies.py` 提取了rally的帧，可以使用批量处理脚本为所有rally生成optical flow：
+
+```bash
+# 1. 首先提取rally帧（如果还没做）
+python process_manual_rallies.py \
+    --config example_rally_config.json \
+    --output_dir ./ncaa_annotations_rally \
+    --frame_dir ./ncaa_frames_rally
+
+# 2. 为所有rally生成optical flow
+python batch_generate_optical_flow.py \
+    --metadata ./ncaa_annotations_rally/rallies_metadata.json \
+    --frame_dir ./ncaa_frames_rally \
+    --model_path ./RAFT/models/raft-small.pth \
+    --output_dir ./ncaa_optical_flow_rally
+```
+
+这会为每个rally生成独立的optical flow文件，保存在 `output_dir` 中。
+
+### 批量处理完整视频
 
 ```bash
 bash batch_flow_6_videos.sh
@@ -126,6 +147,34 @@ ncaa_optical_flow/
 4. **输出位置**: 所有输出文件保存在 `./ncaa_optical_flow/` 目录下
 
 ## 示例
+
+### 处理Rally（推荐工作流）
+
+```bash
+# 步骤1: 提取rally帧
+python process_manual_rallies.py \
+    --config example_rally_config.json \
+    --output_dir ./ncaa_annotations_rally \
+    --frame_dir ./ncaa_frames_rally
+
+# 步骤2: 为所有rally生成optical flow
+python batch_generate_optical_flow.py \
+    --metadata ./ncaa_annotations_rally/rallies_metadata.json \
+    --frame_dir ./ncaa_frames_rally \
+    --model_path ./RAFT/models/raft-small.pth \
+    --output_dir ./ncaa_optical_flow_rally \
+    --skip_frames 1
+
+# 或者只处理特定的rally（通过video_id）
+python batch_generate_optical_flow.py \
+    --metadata ./ncaa_annotations_rally/rallies_metadata.json \
+    --frame_dir ./ncaa_frames_rally \
+    --model_path ./RAFT/models/raft-small.pth \
+    --output_dir ./ncaa_optical_flow_rally \
+    --video_list "6VSmpCSgY7M/rally_0540_0550" "6VSmpCSgY7M/rally_0605_0610"
+```
+
+### 处理完整视频
 
 ```bash
 # 批量处理所有视频
