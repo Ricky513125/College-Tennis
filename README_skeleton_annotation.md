@@ -91,6 +91,27 @@ python generate_skeleton_annotations.py \
 
 ## 处理NCAA视频
 
+### 处理手动指定的Rally（推荐）
+
+如果你已经使用 `process_manual_rallies.py` 提取了rally的帧，可以使用批量处理脚本为所有rally生成skeleton：
+
+```bash
+# 1. 首先提取rally帧（如果还没做）
+python process_manual_rallies.py \
+    --config example_rally_config.json \
+    --output_dir ./ncaa_annotations_rally \
+    --frame_dir ./ncaa_frames_rally
+
+# 2. 为所有rally生成skeleton
+python batch_generate_skeleton.py \
+    --metadata ./ncaa_annotations_rally/rallies_metadata.json \
+    --frame_dir ./ncaa_frames_rally \
+    --model_path ./deep-high-resolution-net.pytorch/models/pose_hrnet_w48_384x288.pth \
+    --output_dir ./ncaa_skeleton_annotations_rally
+```
+
+这会为每个rally生成独立的skeleton JSON文件，保存在 `output_dir` 中。
+
 ### 处理单个视频
 
 ```bash
@@ -106,7 +127,7 @@ python generate_skeleton_annotations.py \
 
 ```
 
-### 批量处理
+### 批量处理完整视频
 
 可以创建一个简单的bash脚本来处理多个视频：
 
@@ -136,6 +157,34 @@ done
 5. **输出位置**: 所有输出文件默认保存在当前目录（College_tennis）下
 
 ## 示例
+
+### 处理Rally（推荐工作流）
+
+```bash
+# 步骤1: 提取rally帧
+python process_manual_rallies.py \
+    --config example_rally_config.json \
+    --output_dir ./ncaa_annotations_rally \
+    --frame_dir ./ncaa_frames_rally
+
+# 步骤2: 为所有rally生成skeleton
+python batch_generate_skeleton.py \
+    --metadata ./ncaa_annotations_rally/rallies_metadata.json \
+    --frame_dir ./ncaa_frames_rally \
+    --model_path ./deep-high-resolution-net.pytorch/models/pose_hrnet_w48_384x288.pth \
+    --output_dir ./ncaa_skeleton_annotations_rally \
+    --skip_frames 1
+
+# 或者只处理特定的rally（通过video_id）
+python batch_generate_skeleton.py \
+    --metadata ./ncaa_annotations_rally/rallies_metadata.json \
+    --frame_dir ./ncaa_frames_rally \
+    --model_path ./deep-high-resolution-net.pytorch/models/pose_hrnet_w48_384x288.pth \
+    --output_dir ./ncaa_skeleton_annotations_rally \
+    --video_list "6VSmpCSgY7M/rally_0540_0550" "6VSmpCSgY7M/rally_0605_0610"
+```
+
+### 处理完整视频
 
 ```bash
 # 处理一个视频，每10帧处理一次（加速）

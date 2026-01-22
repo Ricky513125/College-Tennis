@@ -18,8 +18,9 @@ from generate_skeleton_annotations import load_models, process_frames_from_direc
 
 def get_video_list(metadata_file=None, frame_dir=None):
     """
-    Get list of videos to process.
+    Get list of videos/rallies to process.
     Can be from metadata file or by scanning frame directory.
+    Supports both flat structure (video_id) and nested structure (video_name/rally_id).
     """
     videos = []
     
@@ -28,22 +29,40 @@ def get_video_list(metadata_file=None, frame_dir=None):
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
         for entry in metadata:
+            video_id = entry['video']
             videos.append({
-                'video_id': entry['video'],
+                'video_id': video_id,
                 'num_frames': entry.get('num_frames', 0)
             })
     elif frame_dir and os.path.exists(frame_dir):
-        # Scan frame directory
-        for item in os.listdir(frame_dir):
-            item_path = os.path.join(frame_dir, item)
-            if os.path.isdir(item_path):
-                # Check if it has frame files
-                frame_files = [f for f in os.listdir(item_path) if f.endswith('.jpg')]
-                if frame_files:
-                    videos.append({
-                        'video_id': item,
-                        'num_frames': len(frame_files)
-                    })
+        # Scan frame directory (supports nested structure: video_name/rally_id)
+        for video_name in os.listdir(frame_dir):
+            video_path = os.path.join(frame_dir, video_name)
+            if os.path.isdir(video_path):
+                # Check if it's a nested structure (video_name/rally_id)
+                has_nested = False
+                for item in os.listdir(video_path):
+                    item_path = os.path.join(video_path, item)
+                    if os.path.isdir(item_path):
+                        # This is a nested structure: video_name/rally_id
+                        frame_files = [f for f in os.listdir(item_path) if f.endswith('.jpg')]
+                        if frame_files:
+                            has_nested = True
+                            rally_id = item
+                            full_video_id = f"{video_name}/{rally_id}"
+                            videos.append({
+                                'video_id': full_video_id,
+                                'num_frames': len(frame_files)
+                            })
+                
+                if not has_nested:
+                    # Flat structure: just video_id
+                    frame_files = [f for f in os.listdir(video_path) if f.endswith('.jpg')]
+                    if frame_files:
+                        videos.append({
+                            'video_id': video_name,
+                            'num_frames': len(frame_files)
+                        })
     else:
         raise ValueError("Either metadata_file or frame_dir must be provided")
     
@@ -154,8 +173,11 @@ def main():
     
     for video in tqdm(videos, desc="Videos"):
         video_id = video['video_id']
+        # Handle nested structure (video_name/rally_id)
         frame_dir = os.path.join(args.frame_dir, video_id)
-        output_file = os.path.join(args.output_dir, f'{video_id}_skeleton.json')
+        # Create safe output filename (replace / with _)
+        safe_video_id = video_id.replace('/', '_')
+        output_file = os.path.join(args.output_dir, f'{safe_video_id}_skeleton.json')
         
         if not os.path.exists(frame_dir):
             print(f"\nWarning: Frame directory not found: {frame_dir}")
