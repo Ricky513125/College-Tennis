@@ -32,7 +32,7 @@ except ImportError:
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'F3Set'))
 
 
-def detect_scenes(video_path, threshold=30.0, min_scene_len=1.0, max_scene_len=60.0):
+def detect_scenes(video_path, threshold=30.0, min_scene_len=1.0, max_scene_len=60.0, max_duration=None):
     """
     Detect scene changes in video using pyscenedetect.
     
@@ -41,6 +41,7 @@ def detect_scenes(video_path, threshold=30.0, min_scene_len=1.0, max_scene_len=6
         threshold: Threshold for content detection (lower = more sensitive)
         min_scene_len: Minimum scene length in seconds (filters very short scenes)
         max_scene_len: Maximum scene length in seconds (filters very long scenes like static shots)
+        max_duration: Maximum duration in seconds to process (None = process entire video)
     
     Returns:
         list: List of (start_time, end_time) tuples in seconds
@@ -55,7 +56,7 @@ def detect_scenes(video_path, threshold=30.0, min_scene_len=1.0, max_scene_len=6
     # Add content detector (detects scene changes based on content differences)
     scene_manager.add_detector(ContentDetector(threshold=threshold, min_scene_len=min_scene_len))
     
-    # Start detection
+    # Start detection (we'll filter by max_duration after detection)
     video_manager.set_duration()
     video_manager.start()
     scene_manager.detect_scenes(frame_source=video_manager)
@@ -67,16 +68,28 @@ def detect_scenes(video_path, threshold=30.0, min_scene_len=1.0, max_scene_len=6
     # Filter scenes by length (rally clips are typically 5-30 seconds)
     # Very short scenes (< 2s) are likely cuts/transitions
     # Very long scenes (> 60s) are likely static shots, replays, or breaks
+    # Also filter scenes that exceed max_duration
     filtered_scenes = []
     for (start_time, end_time) in scene_list:
-        duration = (end_time - start_time).get_seconds()
+        start_sec = start_time.get_seconds()
+        end_sec = end_time.get_seconds()
+        
+        # Skip scenes that start after max_duration
+        if max_duration is not None and start_sec >= max_duration:
+            continue
+        
+        # Clip end time to max_duration if needed
+        if max_duration is not None and end_sec > max_duration:
+            end_sec = max_duration
+        
+        duration = end_sec - start_sec
         if min_scene_len <= duration <= max_scene_len:
-            filtered_scenes.append((start_time.get_seconds(), end_time.get_seconds()))
+            filtered_scenes.append((start_sec, end_sec))
     
     return filtered_scenes
 
 
-def extract_frames_from_video(video_path, output_dir, video_id, dim=224, start_time=None, end_time=None):
+def extract_frames_from_video(video_path, output_dir, video_id, dim=224, start_time=None, end_time=None, max_duration=None):
     """
     Extract frames from a video (or a specific time range) and save them in the required format.
     
@@ -86,7 +99,8 @@ def extract_frames_from_video(video_path, output_dir, video_id, dim=224, start_t
         video_id: Unique identifier for the video
         dim: Height dimension for resizing (default 224)
         start_time: Start time in seconds (None = from beginning)
-        end_time: End time in seconds (None = to end)
+        end_time: End time in seconds (None = to end or max_duration)
+        max_duration: Maximum duration in seconds to process (None = no limit)
     
     Returns:
         tuple: (num_frames, fps, width, height)
@@ -112,11 +126,19 @@ def extract_frames_from_video(video_path, output_dir, video_id, dim=224, start_t
         start_frame = int(start_time * fps)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
     
+    # Calculate effective end time (considering max_duration)
+    effective_end_time = end_time
+    if max_duration is not None:
+        effective_start = start_time if start_time is not None else 0
+        max_end_time = effective_start + max_duration
+        if effective_end_time is None or effective_end_time > max_end_time:
+            effective_end_time = max_end_time
+    
     # Extract frames
     count = 0
     end_frame = None
-    if end_time is not None:
-        end_frame = int(end_time * fps)
+    if effective_end_time is not None:
+        end_frame = int(effective_end_time * fps)
     
     while True:
         ret, frame = cap.read()
@@ -181,7 +203,7 @@ def create_video_metadata(video_path, video_id, num_frames, fps, width, height):
 
 
 def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=True, 
-                   scene_threshold=30.0, min_scene_len=2.0, max_scene_len=60.0):
+                   scene_threshold=30.0, min_scene_len=2.0, max_scene_len=60.0, max_duration=None):
     """
     Process video(s) - either a single video file or all videos in a directory.
     Optionally performs scene detection to split videos into rally-level clips.
@@ -194,6 +216,7 @@ def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=Tru
         scene_threshold: Threshold for scene detection (lower = more sensitive)
         min_scene_len: Minimum scene length in seconds
         max_scene_len: Maximum scene length in seconds
+        max_duration: Maximum duration in seconds to process per video (None = no limit)
     """
     video_path = Path(video_path)
     output_dir = Path(output_dir)
@@ -251,26 +274,31 @@ def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=Tru
             if enable_scene_detection:
                 # Detect scenes and split into clips
                 print(f"\nDetecting scenes in {video_path.name}...")
+                if max_duration is not None:
+                    print(f"  Limiting detection to first {max_duration/60:.1f} minutes")
                 scenes = detect_scenes(
                     str(video_path), 
                     threshold=scene_threshold,
                     min_scene_len=min_scene_len,
-                    max_scene_len=max_scene_len
+                    max_scene_len=max_scene_len,
+                    max_duration=max_duration
                 )
                 print(f"Found {len(scenes)} potential rally clips")
                 
                 if len(scenes) == 0:
                     print(f"Warning: No scenes detected in {video_path.name}. Processing entire video.")
-                    # Fall back to processing entire video
+                    # Fall back to processing entire video (with max_duration limit)
                     video_id = base_video_id
                     num_frames, fps, width, height = extract_frames_from_video(
-                        str(video_path), str(frame_dir), video_id
+                        str(video_path), str(frame_dir), video_id,
+                        max_duration=max_duration
                     )
                     metadata = create_video_metadata(
                         str(video_path), video_id, num_frames, fps, width, height
                     )
                     video_metadata.append(metadata)
-                    print(f"Processed {video_path.name}: {num_frames} frames, {fps:.2f} fps")
+                    duration_info = f" (first {max_duration/60:.1f} min)" if max_duration else ""
+                    print(f"Processed {video_path.name}{duration_info}: {num_frames} frames, {fps:.2f} fps")
                 else:
                     # Process each detected scene as a separate clip
                     for clip_idx, (start_time, end_time) in enumerate(scenes):
@@ -280,7 +308,8 @@ def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=Tru
                         
                         num_frames, fps, width, height = extract_frames_from_video(
                             str(video_path), str(frame_dir), clip_id,
-                            start_time=start_time, end_time=end_time
+                            start_time=start_time, end_time=end_time,
+                            max_duration=max_duration
                         )
                         
                         metadata = create_video_metadata(
@@ -288,10 +317,11 @@ def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=Tru
                         )
                         video_metadata.append(metadata)
             else:
-                # Process entire video without scene detection
+                # Process entire video without scene detection (with max_duration limit)
                 video_id = base_video_id
                 num_frames, fps, width, height = extract_frames_from_video(
-                    str(video_path), str(frame_dir), video_id
+                    str(video_path), str(frame_dir), video_id,
+                    max_duration=max_duration
                 )
                 
                 metadata = create_video_metadata(
@@ -299,7 +329,8 @@ def process_videos(video_path, output_dir, frame_dir, enable_scene_detection=Tru
                 )
                 video_metadata.append(metadata)
                 
-                print(f"Processed {video_path.name}: {num_frames} frames, {fps:.2f} fps")
+                duration_info = f" (first {max_duration/60:.1f} min)" if max_duration else ""
+                print(f"Processed {video_path.name}{duration_info}: {num_frames} frames, {fps:.2f} fps")
             
         except Exception as e:
             print(f"Error processing {video_path.name}: {e}")
@@ -363,6 +394,12 @@ def main():
         default=60.0,
         help='Maximum scene length in seconds (default: 60.0)'
     )
+    parser.add_argument(
+        '--max_duration',
+        type=float,
+        default=1500.0,
+        help='Maximum duration in seconds to process per video (default: 1500.0 = 25 minutes)'
+    )
     
     args = parser.parse_args()
     
@@ -387,7 +424,8 @@ def main():
         enable_scene_detection=not args.no_scene_detection,
         scene_threshold=args.scene_threshold,
         min_scene_len=args.min_scene_len,
-        max_scene_len=args.max_scene_len
+        max_scene_len=args.max_scene_len,
+        max_duration=args.max_duration
     )
     
     if metadata_file:
