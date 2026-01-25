@@ -436,6 +436,7 @@ def evaluate(model, dataset, classes, delta=1, window=5, dataset_name='f3set-ten
     f1_lcl = np.zeros((1, 3), int)
     f1_element = np.zeros((len(classes), 3), int)
     f1_event = dict()
+    debug_printed = False
     for video, (coarse_scores, fine_scores, support) in sorted(pred_dict.items()):
         coarse_label, fine_label = dataset.get_labels(video)
         coarse_scores /= support[:, None]
@@ -443,6 +444,26 @@ def evaluate(model, dataset, classes, delta=1, window=5, dataset_name='f3set-ten
 
         # argmax pred
         coarse_pred = np.argmax(coarse_scores, axis=1)
+        
+        # DEBUG: Print first video's labels and predictions
+        if not debug_printed:
+            print(f'\nDEBUG: First video: {video}')
+            print(f'  Video length: {len(coarse_label)}')
+            print(f'  Coarse label events: {np.sum(coarse_label)}')
+            if np.sum(coarse_label) > 0:
+                label_positions = np.where(coarse_label == 1)[0]
+                print(f'  Coarse label positions (first 10): {label_positions[:10]}')
+            print(f'  Coarse scores shape: {coarse_scores.shape}')
+            print(f'  Coarse scores (first 10, class 0): {coarse_scores[:10, 0]}')
+            print(f'  Coarse scores (first 10, class 1): {coarse_scores[:10, 1]}')
+            if np.sum(coarse_pred) > 0:
+                pred_positions = np.where(coarse_pred == 1)[0]
+                print(f'  Coarse pred events: {np.sum(coarse_pred)}')
+                print(f'  Coarse pred positions (first 10): {pred_positions[:10]}')
+            else:
+                print(f'  Coarse pred events: 0 (no predictions!)')
+            print(f'  Using delta={delta} for F1 calculation')
+            debug_printed = True
 
         # dataset specific
         fine_pred = np.zeros_like(fine_scores, int)
