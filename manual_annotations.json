@@ -1,0 +1,3671 @@
+[
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "6VSmpCSgY7M/rally_0540_0550",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 39,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 120,
+        "label": "near_deduce_return_bh_lob_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "6VSmpCSgY7M/rally_0605_0610",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 39,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 379,
+        "label": "near_middle_return_fh_slice_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 419,
+    "video": "6VSmpCSgY7M/rally_0623_0630",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 109,
+        "label": "far_middle_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "6VSmpCSgY7M/rally_0640_0650",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 149,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 199,
+        "label": "near_deduce_return_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 280,
+        "label": "far_deduce_stroke_fh_gs_DL_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 419,
+    "video": "6VSmpCSgY7M/rally_0703_0710",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 240,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "near_ad_return _fh_gs_DL_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 359,
+    "video": "6VSmpCSgY7M/rally_0725_0731",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 240,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "near_middle_return_fh_gs_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "6VSmpCSgY7M/rally_0830_0838",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 400,
+        "label": "far_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "6VSmpCSgY7M/rally_0855_0905",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 70,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 130,
+        "label": "near_deuce_stroke_bh_smash_II_-_in"
+      },
+      {
+        "frame": 156,
+        "label": "far_ad_stroke_fh_gs_IO_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 240,
+    "video": "6VSmpCSgY7M/rally_0927_0931",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 70,
+        "label": "far_middle_serve_-_-_T_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "6VSmpCSgY7M/rally_0954_0959",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 94 ,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 124,
+        "label": "near_middle_return_bh_gs_II_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 779,
+    "video": "6VSmpCSgY7M/rally_1020_1033",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 70,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 120,
+        "label": "near_ad_return_bh_slice_IO_-_in"
+      },
+      {
+        "frame": 295,
+        "label": "far_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 420,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "far_deduce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 600,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 620,
+        "label": "far_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 720,
+        "label": "near_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 180,
+    "video": "6VSmpCSgY7M/rally_1056_1059",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 70,
+        "label": "far_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "6VSmpCSgY7M/rally_1114_1122",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 70,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 180,
+        "label": "near_deuce_return_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "far_middle_stroke_fh_lob_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.022820365466835,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 179,
+    "video": "6VSmpCSgY7M/rally_1143_1146",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "far_middle_serve_-_-_W_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1200,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_0600_0620",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 58,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 128,
+        "label": "far_deduce_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 214,
+        "label": "near_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_middle_stroke_fh_gs_IO_-_in"
+      },
+      {
+        "frame": 400,
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "far_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 532,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 620,
+        "label": "far_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 700,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 780,
+        "label": "far_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 900,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 960,
+        "label": "far_deduce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 1020,
+        "label": "near_deduce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 1080,
+        "label": "far_deduce_stroke_fh_gs_II_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1260,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_0636_0657",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 73,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 143,
+        "label": "far_ad_return_bh_lob_CC_-_in"
+      },
+      {
+        "frame": 298,
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 360,
+        "label": "far_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 410,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 509,
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 540,
+        "label": "near_middle_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 590,
+        "label": "far_ad_stroke_fh_gs_IO_-_in"
+      },
+      {
+        "frame": 700, 
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      }, 
+      {
+        "frame": 800,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 840,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 940,
+        "label": "far_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 1060,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 1100,
+        "label": "far_deduce_stroke_fh_gs_CC_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 419,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_0715_0722",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 51,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 111,
+        "label": "far_deduce_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 190,
+        "label": "near_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 270,
+        "label": "far_middle_stroke_fh_slice_DM_-_in"
+      },
+      {
+        "frame": 340,
+        "label": "near_middle_stroke_fh_volley_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 959,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_0736_0752",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 118,
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 220,
+        "label": "far_deduce_return_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 360,
+        "label": "near_middle_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 400,
+        "label": "far_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 520,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 580,
+        "label": "far_ad_stroke_fh_gs_IO_-_in"
+      },
+      {
+        "frame": 640,
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 760,
+        "label": "far_middle_stroke_fh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1139,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_0811_0830",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+       
+      {
+        "frame": 70,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 111,
+        "label": "far_deduce_return_fh_drop_DL_-_in"
+      },
+      {
+        "frame": 206,
+        "label": "near_ad_stroke_fh_volley_DL_approach_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 400,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 540,
+        "label": "far_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 600,
+        "label": "near_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 660,
+        "label": "far_middle_stroke_fh_volley_CC_approach_in"
+      },
+      {
+        "frame": 720,
+        "label": "near_ad_stroke_bh_volley_CC_approach_in"
+      },
+      {
+        "frame": 780,
+        "label": "far_ad_stroke_bh_volley_II_approach_in"
+      },
+      {
+        "frame": 900,
+        "label": "near_middle_stroke_fh_volley_CC_approach_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_0850_0855",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 102,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 222,
+        "label": "far_ad_return_bh_gs_IO_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 540,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_1003_1012",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 150,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 210,
+        "label": "far_deduce_return_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 270,
+        "label": "near_ad_stroke_fh_gs_CC_approach_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 839,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_1024_1038",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 75,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 143,
+        "label": "far_middle_return_bh_gs_IO_-_in"
+      },
+      {
+        "frame": 224,
+        "label": "near_middle_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_middle_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 360,
+        "label": "near_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 420,
+        "label": "far_ad_stroke_fh_gs_IO_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 540,
+        "label": "far_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 600,
+        "label": "near_middle_stroke_fh_gs_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 539,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_1103_1112",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 171,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 231,
+        "label": "far_deduce_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 351,
+        "label": "near_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 471,
+        "label": "far_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_1127_1131",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 81,
+        "label": "near_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 899,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_1137_1152",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 91,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 266,
+        "label": "far_ad_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 383,
+        "label": "near_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 403,
+        "label": "far_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 503,
+        "label": "near_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 603,
+        "label": "far_ad_stroke_bh_lob_DM_-_forced-err"
+      },
+      {
+        "frame": 723,
+        "label": "near_middle_stroke_fh_smash_DM_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1320,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_1243_1305",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 129,
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 159,
+        "label": "far_middle_return_bh_gs_IO_-_in"
+      },
+      {
+        "frame": 214,
+        "label": "near_ad_stroke_fh_gs_IO_-_in"
+      },
+      {
+        "frame": 274,
+        "label": "far_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 368,
+        "label": "near_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 460,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 552,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 600,
+        "label": "far_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 700,
+        "label": "near_deduce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 780,
+        "label": "far_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 900,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 990,
+        "label": "far_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 1080,
+        "label": "near_deduce_stroke_fh_gs_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.0248402510604,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "Avendano__UL__Vs__Penzlin__LSU_/rally_1330_1340",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 220,
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 280,
+        "label": "far_middle_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 320,
+        "label": "near_middle_stroke_fh_slice_CC_approach_in"
+      },
+      {
+        "frame": 400,
+        "label": "far_deduce_stroke_fh_gs_DL_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 419,
+    "video": "dwPey52i1LE/rally_0553_0600",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,
+        "label": "far_middle_serve_fh_-_W_-_in"
+      },
+      {
+        "frame": 120,
+        "label": "near_deduce_stroke_-_gs_CC_-_in"
+      },
+      {
+        "frame": 220,
+        "label": "far_deduce_stroke_fh_gs_DM_-_forced-err"
+      } 
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1259,
+    "video": "dwPey52i1LE/rally_0614_0635",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 120,
+        "label": "near_ad_return_-_gs_DL_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 305,
+        "label": "near_deduce_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 338,
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "near_deuce_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 600,
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 660,
+        "label": "near_deuce_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 780,
+        "label": "far_deduce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 840,
+        "label": "near_deuce_stroke_-_gs_CC_-_in"
+      },
+      {
+        "frame": 960,
+        "label": "far_deuce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 1020,
+        "label": "near_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 1120,
+        "label": "far_ad_stroke_fh_gs_IO_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "dwPey52i1LE/rally_0703_0707",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 100,
+        "label": "far_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1140,
+    "video": "dwPey52i1LE/rally_0716_0735",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 180,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "near_deuce_return_-_gs_DM_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_middle_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 400,
+        "label": "near_middle_stroke_bh_gs_II_-_in"
+      },
+      {
+        "frame": 460,
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 540,
+        "label": "near_deuce_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 600,
+        "label": "far_middle_stroke_fh_slice_DL_approach_in"
+      },
+      {
+        "frame": 700,
+        "label": "near_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 780,
+        "label": "far_ad_stroke_bh_drop_DM_approach_in"
+      },
+      {
+        "frame": 880,
+        "label": "near_deuce_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 930,
+        "label": "far_middle_stroke_fh_drop_CC_approach_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "dwPey52i1LE/rally_0806_0814",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 86,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 172,
+        "label": "near_deuce_return_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "near_middle_stroke_bh_gs_II_-_in"
+      },
+      {
+        "frame": 420,
+        "label": "far_middle_stroke_fh_gs_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "dwPey52i1LE/rally_0830_0834",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 56,
+        "label": "far_deuce_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1380,
+    "video": "dwPey52i1LE/rally_0837_0900",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "LH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 184,
+        "label": "near_deuce_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 360,
+        "label": "near_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 420,
+        "label": "far_middle_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 540,
+        "label": "near_ad_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 660,
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 720,
+        "label": "near_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 820,
+        "label": "far_middle_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 880,
+        "label": "near_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 930,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 1080,
+        "label": "near_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 1200,
+        "label": "far_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 719,
+    "video": "dwPey52i1LE/rally_1002_1014",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 56,
+        "label": "far_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 129,
+        "label": "near_deuce_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "far_deuce_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 360,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 430,
+        "label": "far_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 540,
+        "label": "near_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 779,
+    "video": "dwPey52i1LE/rally_1037_1050",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "far_ad_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 129,
+        "label": "near_ad_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 232,
+        "label": "far_ad_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 272,
+        "label": "near_ad_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 360,
+        "label": "far_deuce_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 440,
+        "label": "near_middle_stroke_fh_gs_CC_approach_in"
+      },
+      {
+        "frame": 530,
+        "label": "far_deuce_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 600,
+        "label": "near_ad_stroke_bh_drop_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1199,
+    "video": "dwPey52i1LE/rally_1110_1130",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 100,
+        "label": "far_deuce_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 160,
+        "label": "near_deuce_return_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_middle_stroke_fh_gs_IO_-_in"
+      },
+      {
+        "frame": 360,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "far_middle_stroke_fh_gs_IO_-_in"
+      },
+      {
+        "frame": 500,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 620,
+        "label": "far_ad_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 720,
+        "label": "near_ad_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 780,
+        "label": "far_deuce_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 900,
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 1000,
+        "label": "far_deuce_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 1060,
+        "label": "near_deuce_stroke_fh_lob_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02702821336086,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 659,
+    "video": "dwPey52i1LE/rally_1147_1158",
+    "far_name": "Unknown",
+    "far_hand": "LH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 56,
+        "label": "far_ad_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 120,
+        "label": "near_ad_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 180,
+        "label": "far_middle_stroke_fh_slice_DM_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "near_ad_stroke_bh_slice_DL_approach_in"
+      },
+      {
+        "frame": 400,
+        "label": "far_deuce_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 440,
+        "label": "near_ad_stroke_bh_volley_CC_approach_in"
+      },
+      {
+        "frame": 480,
+        "label": "far_ad_stroke_fh_gs_CC_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1019,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0303_0320",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 73,
+        "label": "far_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 133,
+        "label": "near_deuce_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 183,
+        "label": "far_middle_stroke_bh_gs_IO_-_in"
+      },
+      {
+        "frame": 303,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 373,
+        "label": "far_ad_stroke_bh_gs_IO_-_in"
+      },
+      {
+        "frame": 421, 
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 482,
+        "label": "far_middle_stroke_bh_gs_II_-_in"
+      },
+      {
+        "frame": 541,
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 601,
+        "label": "far_deuce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 661,
+        "label": "near_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 359,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0337_0343",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 63,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 97, 
+        "label": "near_ad_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 157,
+        "label": "far_middle_stroke_bh_gs_IO_-_in"
+      },
+      {
+        "frame": 217,
+        "label": "near_ad_stroke_bh_gs_DL_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 540,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0402_0411",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60, 
+        "label": "far_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 121,
+        "label": "near_deuce_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 181,
+        "label": "far_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 281,
+        "label": "near_deuce_stroke_fh_drop_CC_-_in"
+      },
+      {
+        "frame": 361,
+        "label": "far_ad_stroke_fh_gs_IO_approach_in"
+      },
+      {
+        "frame": 401, 
+        "label": "near_ad_stroke_fh_gs_DL_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0452_0457",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "far_middle_serve_-_-_T_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0600_0610",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,
+        "label": "far_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 120, 
+        "label": "near_deuce_return_bh_gs_II_-_in"
+      },
+      {
+        "frame": 180,
+        "label": "far_middle_stroke_bh_gs_IO_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 340,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 420,
+        "label": "near_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 179,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0637_0640",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "far_ad_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0649_0654",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "far_middle_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 960,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0727_0743",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "far_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 180, 
+        "label": "near_deuce_return_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 311,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 420,
+        "label": "far_ad_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "near_deuce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 580,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 660,
+        "label": "near_deuce_stroke_bh_slice_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 179,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0800_0803",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 22,
+        "label": "far_ad_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0844_0849",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 180,
+        "label": "far_deuce_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 420,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0900_0907",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 18,
+        "label": "far_deuce_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 58, 
+        "label": "near_deuce_return_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 178,
+        "label": "far_deuce_stroke_fh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.023985148159795,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "Hoole_SC_vs_Dong_LSU/rally_0929_0939",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 76,
+        "label": "far_ad_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 100, 
+        "label": "near_ad_return_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 165,
+        "label": "far_deuce_stroke_fh_lob_DM_-_in"
+      },
+      {
+        "frame": 280,
+        "label": "near_middle_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 400,
+        "label": "far_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "IohTeru65U4/rally_0634_0642",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 43, 
+        "label": "near_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 111, 
+        "label": "far_deuce_return_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 171,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 231,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 351,
+        "label": "near_ad_stroke_bh_gs_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 419,
+    "video": "IohTeru65U4/rally_0715_0722",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 240, 
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_ad_return_bh_slice_IO_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "IohTeru65U4/rally_0735_0740",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 180,
+        "label": "near_middle_serve_-_-_W_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 179,
+    "video": "IohTeru65U4/rally_0800_0803",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 37,
+        "label": "near_ad_serve_-_-_W_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 300,
+    "video": "IohTeru65U4/rally_0819_0824",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 21,
+        "label": "near_deuce_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 81,
+        "label": "far_middle_return_bh_slice_II_-_in"
+      },
+      {
+        "frame": 141,
+        "label": "near_middle_stroke_fh_gs_DL_approach_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 240,
+    "video": "IohTeru65U4/rally_0938_0942",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 71,
+        "label": "near_middle_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 659,
+    "video": "IohTeru65U4/rally_0949_1000",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 180, 
+        "label": "far_deuce_return_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 310,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 420,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "far_middle_stroke_bh_gs_II_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "IohTeru65U4/rally_1015_1019",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 71,
+        "label": "near_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 719,
+    "video": "IohTeru65U4/rally_1030_1042",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 144, 
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 200, 
+        "label": "far_ad_return_fh_gs_II_-_in"
+      },
+      {
+        "frame": 260,
+        "label": "near_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 380,
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 440,
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 560,
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 630,
+        "label": "near_middle_stroke_fh_gs_IO_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "IohTeru65U4/rally_1100_1104",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "near_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "IohTeru65U4/rally_1117_1125",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 58,
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 118, 
+        "label": "far_middle_return_bh_gs_II_-_in"
+      },
+      {
+        "frame": 178,
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 238,
+        "label": "far_deuce_stroke_fh_lob_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "IohTeru65U4/rally_1147_1155",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 120, 
+        "label": "far_ad_return_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 240,
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_deuce_stroke_fh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02581969054371,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 540,
+    "video": "IohTeru65U4/rally_1210_1219",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120, 
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 184, 
+        "label": "far_deuce_return_bh_gs_IO_-_in"
+      },
+      {
+        "frame": 240, 
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "far_deuce_stroke_fh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 779,
+    "video": "Lc9MSf6vHxU/rally_0457_0510",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 51, 
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 111,
+        "label": "far_deuce_return_fh_drop_DM_-_in"
+      },
+      {
+        "frame": 171,
+        "label": "near_middle_stroke_bh_slice_IO_approach_in"
+      },
+      {
+        "frame": 231,
+        "label": "far_ad_stroke_bh_lob_CC_-_in"
+      },
+      {
+        "frame": 351,
+        "label": "near_ad_stroke_fh_volley_IO_approach_in"
+      },
+      {
+        "frame": 471,
+        "label": "far_ad_stroke_bh_drop_CC_approach_in"
+      },
+      {
+        "frame": 531,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 561,
+        "label": "far_middle_stroke_bh_drop_DM_approach_in"
+      },
+      {
+        "frame": 591,
+        "label": "near_ad_stroke_bh_gs_CC_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "Lc9MSf6vHxU/rally_0527_0531",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 48,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 108,
+        "label": "far_ad_return_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 171,
+        "label": "near_middle_stroke_bh_slice_IO_approach_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 179,
+    "video": "Lc9MSf6vHxU/rally_0546_0549",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 29,
+        "label": "near_middle_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "Lc9MSf6vHxU/rally_0555_0605",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 73, 
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 133,
+        "label": "far_deuce_return_bh_gs_II_-_in"
+      },
+      {
+        "frame": 193,
+        "label": "near_middle_stroke_bh_slice_IO_approach_in"
+      },
+      {
+        "frame": 253,
+        "label": "far_ad_stroke_bh_drop_DL_-_in"
+      },
+      {
+        "frame": 313,
+        "label": "near_deuce_stroke_fh_slice_CC_approach_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "Lc9MSf6vHxU/rally_0640_0645",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 97,
+        "label": "near_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "Lc9MSf6vHxU/rally_0656_0704",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 69,
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 119,
+        "label": "far_ad_return_fh_gs_Io_-_in"
+      },
+      {
+        "frame": 189,
+        "label": "near_middle_stroke_bh_slice_IO_approach_in"
+      },
+      {
+        "frame": 249,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 309,
+        "label": "near_ad_stroke_bh_volley_CC_approach_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "Lc9MSf6vHxU/rally_0726_0731",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 103,  
+        "label": "near_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "Lc9MSf6vHxU/rally_0740_0748",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 86, 
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 146,
+        "label": "far_deuce_return_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 206,
+        "label": "near_middle_stroke_fh_volley_IO_approach_in"
+      },
+      {
+        "frame": 222,
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 326,
+        "label": "near_ad_stroke_fh_volley_CC_approach_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "Lc9MSf6vHxU/rally_0810_0818",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 156,
+        "label": "near_middle_serve_-_-W_-_in"
+      },
+      {
+        "frame": 216,
+        "label": "far_ad_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 276,
+        "label": "near_ad_stroke_bh_volley_II_approach_in"
+      },
+      {
+        "frame": 236,
+        "label": "far_deuce_stroke_fh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 419,
+    "video": "Lc9MSf6vHxU/rally_0908_0915",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120,
+        "label": "near_deuce_serve_-_-W_-_in"
+      },
+      {
+        "frame": 180,
+        "label": "far_deuce_return_fh_slice_DL_-_in"
+      },
+      {
+        "frame": 300,
+        "label": "near_ad_stroke_bh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 599,
+    "video": "Lc9MSf6vHxU/rally_0928_0938",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,
+        "label": "near_middle_serve_-_-W_-_in"
+      },
+      {
+        "frame": 138, 
+        "label": "far_ad_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 256, 
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 316, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 376,
+        "label": "near_deuce_stroke_fh_drop_DL_approach_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 659,
+    "video": "Lc9MSf6vHxU/rally_0951_1002",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 84, 
+        "label": "near_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 144, 
+        "label": "far_deuce_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 229, 
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 289, 
+        "label": "far_deuce_strok_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 409, 
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 469, 
+        "label": "far_middle_strok_fh_gs_CC_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "Lc9MSf6vHxU/rally_1022_1026",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 62, 
+        "label": "near_middle_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 420,
+    "video": "Lc9MSf6vHxU/rally_1035_1042",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 83, 
+        "label": "near_ad_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 143, 
+        "label": "far_ad_return_fh_gs_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 359,
+    "video": "Lc9MSf6vHxU/rally_1052_1058",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60, 
+        "label": "near_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 120, 
+        "label": "far_deuce_return_bh_slice_II_-_in"
+      },
+      {
+        "frame": 240, 
+        "label": "near_ad_stroke_bh_gs_DL_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 480,
+    "video": "Lc9MSf6vHxU/rally_1124_1132",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 90, 
+        "label": "near_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 110,
+        "label": "far_middle_stroke_fh_drop_DM_-_in"
+      },
+      {
+        "frame": 159, 
+        "label": "near_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 279, 
+        "label": "far_deduce_stroke_fh_gs_DL_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.02043883626457,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "Lc9MSf6vHxU/rally_1205_1210",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 120, 
+        "label": "near_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 180,
+        "label": "far_deuce_return_fh_drop_DM_-_in"
+      },
+      {
+        "frame": 240, 
+        "label": "near_middle_stroke_fh_gs_CC_approach_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 900,
+    "video": "RUokidaZR30/rally_0818_0833",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,  
+        "label": "far_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 149,   
+        "label": "near_deduce_return_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 209, 
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 269,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 324, 
+        "label": "far_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 412, 
+        "label": "near_middle_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 472, 
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 592, 
+        "label": "near_middle_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 712, 
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 772,
+        "label": "near_ad_stroke_fh_gs_II_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 359,
+    "video": "RUokidaZR30/rally_0857_0903",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 180,  
+        "label": "far_middle_serve_-_-_W_-_unforced-err"
+      }
+
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1379,
+    "video": "RUokidaZR30/rally_0912_0935",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 60,  
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 161, 
+        "label": "near_ad_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 229, 
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 341,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 427,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "near_ad_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 540, 
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 660, 
+        "label": "near_middle_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 720, 
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 840, 
+        "label": "near_ad_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 900, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 960,
+        "label": "near_deuce_stroke_fh_gs_lob_-_in"
+      },
+      {
+        "frame": 1200, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 359,
+    "video": "RUokidaZR30/rally_1002_1008",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 115,
+        "label": "far_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1080,
+    "video": "RUokidaZR30/rally_1015_1033",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 92,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 152, 
+        "label": "near_deuce_return_bh_gs_II_-_in"
+      },
+      {
+        "frame": 212, 
+        "label": "far_middle_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 246, 
+        "label": "near_middle_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 323, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 443,
+        "label": "near_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 503,
+        "label": "far_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 563,
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 683, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 743, 
+        "label": "near_deuce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 863, 
+        "label": "far_ad_stroke_bh_drop_CC_-_in"
+      },
+      {
+        "frame": 923, 
+        "label": "near_ad_stroke_bh_slice_DL_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1800,
+    "video": "RUokidaZR30/rally_1112_1142",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 160,  
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 203,
+        "label": "near_ad_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 244, 
+        "label": "far_ad_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 304,  
+        "label": "near_middle_return_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 439, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 469, 
+        "label": "near_deuce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 527,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 480,
+        "label": "near_ad_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 540, 
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 610, 
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+     {
+        "frame": 734,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 776,
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 836, 
+        "label": "far_deuce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 896,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 1000, 
+        "label": "far_ad_stroke_bh_slice_CC_-_in"
+      },
+      {
+        "frame": 1136, 
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 1196, 
+        "label": "far_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 1256,
+        "label": "near_middle_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 1376, 
+        "label": "far_ad_stroke_bh_slice_DL_-_in"
+      },
+      {
+        "frame": 1436,
+        "label": "near_deuce_stroke_fh_gs_CC_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "RUokidaZR30/rally_1207_1212",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 58,
+        "label": "far_deuce_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 899,
+    "video": "RUokidaZR30/rally_1220_1235",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 118,
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 180, 
+        "label": "near_middle_return_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 300,  
+        "label": "far_middle_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 363, 
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 423, 
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 543, 
+        "label": "near_ad_stroke_bh_slice_CC_-_in"
+      },
+      {
+        "frame": 663,
+        "label": "far_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 703,
+        "label": "near_deuce_stroke_fh_gs_CC_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 479,
+    "video": "RUokidaZR30/rally_1351_1359",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0, 
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 100,
+        "label": "far_deuce_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 163,
+        "label": "near_deuce_return_bh_gs_II_-_in"
+      },
+      {
+        "frame": 223,  
+        "label": "far_middle_stroke_bh_gs_II_-_in"
+      },
+      {
+        "frame": 283, 
+        "label": "near_middle_stroke_fh_gs_CC_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 1019,
+    "video": "RUokidaZR30/rally_1414_1431",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 163,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 213, 
+        "label": "near_ad_return_fh_gs_II_-_in"
+      },
+      {
+        "frame": 283, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 343, 
+        "label": "near_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 463, 
+        "label": "far_middle_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 523,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 583,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 643,
+        "label": "near_ad_stroke_bh_gs_DM_-_in"
+      },
+      {
+        "frame": 703,
+        "label": "far_middle_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 793, 
+        "label": "near_deuce_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 853,
+        "label": "far_middle_stroke_fh_gs_IO_-_winnner"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 959,
+    "video": "RUokidaZR30/rally_1454_1510",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 102, 
+        "label": "far_middle_serve_-_-_T_-_in"
+      },
+      {
+        "frame": 185,
+        "label": "near_deuce_return_bh_slice_II_-_in"
+      },
+      {
+        "frame": 302,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 362, 
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 422, 
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 482,
+        "label": "near_ad_stroke_bh_gs_DL_-_in"
+      },
+      {
+        "frame": 542, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 632,
+        "label": "near_deuce_stroke_fh_gs_DL_-_in"
+      },
+      {
+        "frame": 692,
+        "label": "far_ad_stroke_bh_slice_IO_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 239,
+    "video": "RUokidaZR30/rally_1537_1541",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 87,
+        "label": "far_ad_serve_-_-_W_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 600,
+    "video": "RUokidaZR30/rally_1545_1555",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+       {
+        "frame": 69,
+        "label": "far_middle_serve_-_-_W_-_in",
+        "score": 0.920361328125
+      },
+      {
+        "frame": 129,
+        "label": "near_ad_return_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 189,
+        "label": "far_ad_stroke_bh_slice_CC_-_in"
+      },
+      {
+        "frame": 309, 
+        "label": "near_middle_stroke_fh_gs_IO_-_winner"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 420,
+    "video": "RUokidaZR30/rally_1627_1634",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 130, 
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 180,
+        "label": "near_deuce_return_fh_gs_DM_-_forced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 299,
+    "video": "RUokidaZR30/rally_1655_1700",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 100,  
+        "label": "far_middle_serve_-_-_T_-_unforced-err"
+      }
+    ]
+  },
+  {
+    "fps": 60.027293086365,
+    "height": 1080,
+    "width": 1920,
+    "num_frames": 839,
+    "video": "RUokidaZR30/rally_1706_1720",
+    "far_name": "Unknown",
+    "far_hand": "RH",
+    "far_set": 0,
+    "far_game": 0,
+    "far_point": 0,
+    "near_name": "Unknown",
+    "near_hand": "RH",
+    "near_set": 0,
+    "near_game": 0,
+    "near_point": 0,
+    "events": [
+      {
+        "frame": 86,
+        "label": "far_middle_serve_-_-_W_-_in"
+      },
+      {
+        "frame": 156,
+        "label": "near_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 237,
+        "label": "far_ad_stroke_bh_gs_CC_-_in"
+      },
+      {
+        "frame": 347, 
+        "label": "near_ad_stroke_fh_gs_II_-_in"
+      },
+      {
+        "frame": 407, 
+        "label": "far_middle_stroke_fh_gs_DM_-_in"
+      },
+      {
+        "frame": 467,
+        "label": "near_deuce_stroke_fh_gs_CC_-_in"
+      },
+      {
+        "frame": 587, 
+        "label": "far_deuce_stroke_fh_gs_CC_-_forced-err"
+      }
+      
+      
+    ]
+  }
+]
