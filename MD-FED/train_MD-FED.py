@@ -375,11 +375,11 @@ class MD_FED(BaseRGBModel):
                             
                             # Show labels and predictions for first sample in batch
                             sample_idx = 0
-                            sample_coarse_label = coarse_label[sample_idx].cpu().numpy()
-                            sample_fine_label = fine_label[sample_idx].cpu().numpy()
-                            sample_coarse_pred = torch.softmax(coarse_pred[sample_idx], dim=-1).cpu().numpy()
+                            sample_coarse_label = coarse_label[sample_idx].cpu().detach().numpy()
+                            sample_fine_label = fine_label[sample_idx].cpu().detach().numpy()
+                            sample_coarse_pred = torch.softmax(coarse_pred[sample_idx], dim=-1).cpu().detach().numpy()
                             sample_coarse_pred_class = np.argmax(sample_coarse_pred, axis=-1)
-                            sample_fine_pred = torch.sigmoid(fine_pred[sample_idx]).cpu().numpy()
+                            sample_fine_pred = torch.sigmoid(fine_pred[sample_idx]).cpu().detach().numpy()
                             
                             print(f'\n[Sample {sample_idx} - Ground Truth Labels]')
                             label_event_count = np.sum(sample_coarse_label)
@@ -432,8 +432,8 @@ class MD_FED(BaseRGBModel):
                             print(f'  Total loss: {loss.item():.5f}')
                             
                             # Show batch statistics
-                            batch_label_counts = [np.sum(coarse_label[i].cpu().numpy()) for i in range(batch_size)]
-                            batch_pred_counts = [np.sum(np.argmax(torch.softmax(coarse_pred[i], dim=-1).cpu().numpy(), axis=-1)) for i in range(batch_size)]
+                            batch_label_counts = [np.sum(coarse_label[i].cpu().detach().numpy()) for i in range(batch_size)]
+                            batch_pred_counts = [np.sum(np.argmax(torch.softmax(coarse_pred[i], dim=-1).cpu().detach().numpy(), axis=-1)) for i in range(batch_size)]
                             print(f'\n[Batch Statistics]')
                             print(f'  Samples with events (GT): {sum(1 for c in batch_label_counts if c > 0)}/{batch_size}')
                             print(f'  Samples with predictions: {sum(1 for c in batch_pred_counts if c > 0)}/{batch_size}')
