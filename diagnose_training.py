@@ -8,9 +8,8 @@ Diagnostic script to check training issues:
 
 import os
 import sys
-import numpy as np
-import torch
 import json
+import numpy as np
 
 def check_predictions(output_dir):
     """Check what the model is actually predicting"""
@@ -52,7 +51,13 @@ def check_predictions(output_dir):
             print(f"  Best val_edit: {max([val_edits[i] for i in val_epochs]):.5f}")
         else:
             print(f"\n⚠ No validation performed (all val_edit are 0)")
-            print(f"  This is normal if start_val_epoch was not reached")
+            # Check start_val_epoch
+            num_epochs = len(losses)
+            start_val_epoch = num_epochs - 20  # BASE_NUM_VAL_EPOCHS = 20
+            print(f"  Expected start_val_epoch: {start_val_epoch}")
+            print(f"  This means evaluation should run from epoch {start_val_epoch} onwards")
+            if num_epochs >= start_val_epoch:
+                print(f"  ⚠ Evaluation should have run but didn't - check evaluation code")
         
         # Find best epoch by loss
         best_loss_epoch = np.argmin(val_losses)
@@ -66,50 +71,126 @@ def check_predictions(output_dir):
         
     else:
         print(f"\n✗ loss.json not found in {output_dir}")
+        print(f"  Directory contents:")
+        if os.path.exists(output_dir):
+            for f in os.listdir(output_dir):
+                print(f"    - {f}")
+        return
     
-    # Check error sequences file
-    error_file = 'error_sequences.txt'
-    if os.path.exists(error_file):
-        with open(error_file, 'r') as f:
+    # Check error sequences file - check multiple possible locations
+    error_files = [
+        'error_sequences.txt',  # Current directory
+        os.path.join(output_dir, 'error_sequences.txt'),  # Output directory
+        os.path.join(os.path.dirname(output_dir), 'error_sequences.txt'),  # Parent directory
+        'MD-FED/error_sequences.txt',  # MD-FED directory (if running from project root)
+    ]
+    
+    error_file_found = None
+    for error_file in error_files:
+        if os.path.exists(error_file):
+            error_file_found = error_file
+            break
+    
+    if error_file_found:
+        with open(error_file_found, 'r') as f:
             content = f.read()
         if len(content.strip()) == 0:
-            print(f"\n⚠ {error_file} is empty - this could mean:")
-            print("  1. Model is predicting no events at all")
-            print("  2. Model predictions are all correct (unlikely with F1=0)")
+            print(f"\n⚠ {error_file_found} is EMPTY")
+            print("  This strongly suggests the model is predicting NO EVENTS at all")
+            print("  Possible causes:")
+            print("    1. Model always predicts class 0 (no event)")
+            print("    2. coarse_scores[:, 0] > coarse_scores[:, 1] for all frames")
+            print("    3. Model hasn't learned to detect events")
         else:
             lines = content.strip().split('\n')
-            print(f"\n✓ Found {len([l for l in lines if l.startswith('video')])} error sequences in {error_file}")
+            video_count = len([l for l in lines if 'video' in l.lower() or l.endswith('.mp4') or l.endswith('.avi') or '/' in l])
+            print(f"\n✓ Found {video_count} error sequences in {error_file_found}")
+            print("  This means the model IS making predictions, but they're wrong")
+            print(f"  First few lines:")
+            for line in lines[:10]:
+                if line.strip():
+                    print(f"    {line[:80]}")
     else:
-        print(f"\n⚠ {error_file} not found - evaluation may not have run properly")
+        print(f"\n⚠ error_sequences.txt not found in any expected location")
+        print("  Checked locations:")
+        for ef in error_files:
+            print(f"    - {ef}")
+        print("  This could mean:")
+        print("    1. Evaluation hasn't run yet")
+        print("    2. Model predicts nothing (file created but empty, then deleted?)")
+        print("    3. File is in a different location")
+    
+    # Check checkpoints
+    checkpoint_files = []
+    if os.path.exists(output_dir):
+        for f in os.listdir(output_dir):
+            if f.startswith('checkpoint_') and f.endswith('.pt'):
+                checkpoint_files.append(f)
+    
+    if checkpoint_files:
+        print(f"\n✓ Found {len(checkpoint_files)} checkpoint files")
+        epochs = []
+        for f in checkpoint_files:
+            try:
+                epoch = int(f.replace('checkpoint_', '').replace('.pt', ''))
+                epochs.append(epoch)
+            except:
+                pass
+        if epochs:
+            print(f"  Epochs: {min(epochs)} to {max(epochs)}")
+    else:
+        print(f"\n⚠ No checkpoint files found in {output_dir}")
     
     print("\n" + "="*60)
-    print("Recommendations:")
+    print("Diagnosis Summary:")
     print("="*60)
-    print("1. Check if model is learning:")
-    print("   - If train loss is not decreasing, try:")
-    print("     * Lower learning rate (e.g., 0.0001)")
-    print("     * Check data loading (are labels correct?)")
-    print("     * Check if model architecture is correct for Stage 1")
-    print()
-    print("2. Check predictions:")
-    print("   - Model may be predicting all 'no event' (class 0)")
-    print("   - This would cause F1=0 and Edit score=0")
-    print("   - Check coarse_scores distribution in evaluation")
-    print()
-    print("3. Validation loss > Training loss:")
-    print("   - This can be normal, especially early in training")
-    print("   - But combined with F1=0, suggests model isn't learning")
-    print()
-    print("4. For Stage 1 training:")
-    print("   - Make sure skeleton data is being loaded correctly")
-    print("   - Check that pose_dir contains valid .pkl files")
-    print("   - Verify data preparation was done correctly")
+    
+    # Final diagnosis
+    if error_file_found:
+        with open(error_file_found, 'r') as f:
+            content = f.read()
+        if len(content.strip()) == 0:
+            print("\n🔴 CRITICAL: Model is not predicting any events")
+            print("\nRoot cause: Model always predicts class 0 (no event)")
+            print("\nRecommended fixes:")
+            print("  1. Check data balance:")
+            print("     - Are there enough 'event' frames vs 'no event' frames?")
+            print("     - Try class weighting in loss function")
+            print("  2. Lower learning rate:")
+            print("     python run_md_fed_stage1.py --learning_rate 0.0001 ...")
+            print("  3. Check skeleton data:")
+            print("     - Verify pose_dir contains valid .pkl files")
+            print("     - Check if skeleton features are being extracted correctly")
+            print("  4. Check labels:")
+            print("     - Verify train.json and val.json have correct event labels")
+            print("  5. Try different initialization or longer training")
+        else:
+            print("\n🟡 PARTIAL: Model is making predictions but they're incorrect")
+            print("\nThis is progress! The model is learning but needs:")
+            print("  1. More training epochs")
+            print("  2. Better hyperparameters")
+            print("  3. Data augmentation")
+    else:
+        print("\n⚠️  UNCERTAIN: Cannot determine prediction status")
+        print("\nNext steps:")
+        print("  1. Check if evaluation ran (epoch >= start_val_epoch)")
+        print("  2. Manually run evaluation on a checkpoint")
+        print("  3. Check training logs for evaluation output")
+    
+    if val_edits and all(e == 0 for e in val_edits):
+        print("\n⚠️  Evaluation may not have run properly")
+        print("   Check that:")
+        print("   - epoch >= start_val_epoch (should be epoch 30+ for 50 epochs)")
+        print("   - val_data_frames is not None")
+        print("   - Evaluation function completed without errors")
+    
+    print("\n" + "="*60)
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage: python diagnose_training.py <output_dir>")
-        print("Example: python diagnose_training.py md_fed_outputs/stage1")
+        print("Example: python diagnose_training.py MD-FED/md_fed_outputs/stage1")
         sys.exit(1)
     
     output_dir = sys.argv[1]

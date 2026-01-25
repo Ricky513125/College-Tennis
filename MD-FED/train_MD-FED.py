@@ -799,7 +799,7 @@ def main(args):
                 print('New best epoch!')
         elif args.criterion == 'edit':
             if epoch >= args.start_val_epoch:
-                val_edit = evaluate(model, val_data_frames, classes, window=args.window, dataset_name=args.dataset)
+                val_edit = evaluate(model, val_data_frames, classes, delta=10, window=args.window, dataset_name=args.dataset)
                 if args.criterion == 'edit' and val_edit > best_criterion:
                     best_criterion = val_edit
                     best_epoch = epoch
@@ -844,7 +844,7 @@ def main(args):
                                                    overlap_len=args.clip_len//2, crop_dim=args.crop_dim,
                                                    stride=args.stride, is_test=True)
                 split_data.print_info()
-                evaluate(model, split_data, classes, window=args.window, dataset_name=args.dataset)
+                evaluate(model, split_data, classes, delta=10, window=args.window, dataset_name=args.dataset)
 
 
 if __name__ == '__main__':
