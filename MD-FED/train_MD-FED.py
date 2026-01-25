@@ -400,6 +400,16 @@ class MD_FED(BaseRGBModel):
 
 
 def evaluate(model, dataset, classes, delta=1, window=5, dataset_name='f3set-tennis-sub', device='cuda'):
+    # DEBUG: Print dataset info
+    print(f'\n{"="*60}')
+    print(f'Starting Evaluation')
+    print(f'{"="*60}')
+    print(f'Dataset: {dataset_name}')
+    print(f'Label file: {dataset._src_file if hasattr(dataset, "_src_file") else "unknown"}')
+    print(f'Total videos: {len(dataset.videos)}')
+    print(f'Delta tolerance: {delta}')
+    print(f'{"="*60}\n')
+    
     pred_dict = {}
     for video, video_len, _ in dataset.videos:
         pred_dict[video] = (
@@ -446,7 +456,9 @@ def evaluate(model, dataset, classes, delta=1, window=5, dataset_name='f3set-ten
     f1_lcl = np.zeros((1, 3), int)
     f1_element = np.zeros((len(classes), 3), int)
     f1_event = dict()
-    debug_printed = False
+    debug_count = 0
+    max_debug_videos = 5  # 只输出前5个视频的详细信息
+    
     for video, (coarse_scores, fine_scores, support) in sorted(pred_dict.items()):
         coarse_label, fine_label = dataset.get_labels(video)
         coarse_scores /= support[:, None]
@@ -455,25 +467,77 @@ def evaluate(model, dataset, classes, delta=1, window=5, dataset_name='f3set-ten
         # argmax pred
         coarse_pred = np.argmax(coarse_scores, axis=1)
         
-        # DEBUG: Print first video's labels and predictions
-        if not debug_printed:
-            print(f'\nDEBUG: First video: {video}')
-            print(f'  Video length: {len(coarse_label)}')
-            print(f'  Coarse label events: {np.sum(coarse_label)}')
-            if np.sum(coarse_label) > 0:
+        # DEBUG: Print detailed info for first few videos
+        if debug_count < max_debug_videos:
+            print(f'\n{"="*60}')
+            print(f'DEBUG Video {debug_count + 1}: {video}')
+            print(f'{"="*60}')
+            print(f'Video length: {len(coarse_label)} frames')
+            
+            # Ground truth labels
+            print(f'\n[Ground Truth Labels]')
+            label_event_count = np.sum(coarse_label)
+            print(f'  Total event frames: {label_event_count}')
+            if label_event_count > 0:
                 label_positions = np.where(coarse_label == 1)[0]
-                print(f'  Coarse label positions (first 10): {label_positions[:10]}')
-            print(f'  Coarse scores shape: {coarse_scores.shape}')
-            print(f'  Coarse scores (first 10, class 0): {coarse_scores[:10, 0]}')
-            print(f'  Coarse scores (first 10, class 1): {coarse_scores[:10, 1]}')
-            if np.sum(coarse_pred) > 0:
-                pred_positions = np.where(coarse_pred == 1)[0]
-                print(f'  Coarse pred events: {np.sum(coarse_pred)}')
-                print(f'  Coarse pred positions (first 10): {pred_positions[:10]}')
+                print(f'  Event frame positions (first 20): {label_positions[:20].tolist()}')
+                
+                # Get fine-grained labels for event frames
+                print(f'  Fine-grained labels at event frames:')
+                for pos in label_positions[:10]:  # Show first 10 events
+                    fine_labels_at_pos = []
+                    for j in range(len(fine_label[0])):
+                        if fine_label[pos, j] == 1:
+                            fine_labels_at_pos.append(classes_inv.get(j + 1, f'class_{j+1}'))
+                    if fine_labels_at_pos:
+                        print(f'    Frame {pos}: {"_".join(fine_labels_at_pos)}')
             else:
-                print(f'  Coarse pred events: 0 (no predictions!)')
-            print(f'  Using delta={delta} for F1 calculation')
-            debug_printed = True
+                print(f'  ⚠️  No events in ground truth!')
+            
+            # Model predictions
+            print(f'\n[Model Predictions]')
+            pred_event_count = np.sum(coarse_pred)
+            print(f'  Total predicted event frames: {pred_event_count}')
+            print(f'  Coarse scores shape: {coarse_scores.shape}')
+            print(f'  Coarse scores (first 10 frames, class 0): {coarse_scores[:10, 0]}')
+            print(f'  Coarse scores (first 10 frames, class 1): {coarse_scores[:10, 1]}')
+            
+            if pred_event_count > 0:
+                pred_positions = np.where(coarse_pred == 1)[0]
+                print(f'  Predicted event frame positions (first 20): {pred_positions[:20].tolist()}')
+                
+                # Get fine-grained predictions for predicted event frames
+                print(f'  Fine-grained predictions at predicted frames:')
+                for pos in pred_positions[:10]:  # Show first 10 predictions
+                    fine_preds_at_pos = []
+                    for j in range(len(fine_scores[0])):
+                        # Check if this class is predicted (using threshold or argmax logic)
+                        if fine_scores[pos, j] > 0.3:  # Threshold for prediction
+                            fine_preds_at_pos.append(classes_inv.get(j + 1, f'class_{j+1}'))
+                    if fine_preds_at_pos:
+                        print(f'    Frame {pos}: {"_".join(fine_preds_at_pos)} (score: {fine_scores[pos, :].max():.3f})')
+            else:
+                print(f'  ⚠️  No events predicted!')
+                print(f'  Max class 1 score: {coarse_scores[:, 1].max():.4f}')
+                print(f'  Mean class 1 score: {coarse_scores[:, 1].mean():.4f}')
+            
+            # Comparison
+            print(f'\n[Comparison]')
+            print(f'  Using delta={delta} for F1 matching')
+            if label_event_count > 0 and pred_event_count > 0:
+                # Check if any predictions match labels within delta
+                matches = 0
+                for pred_pos in pred_positions[:20]:
+                    label_window = coarse_label[max(0, pred_pos - delta):min(len(coarse_label), pred_pos + delta + 1)]
+                    if np.sum(label_window) > 0:
+                        matches += 1
+                print(f'  Predictions matching labels (within ±{delta} frames): {matches}/{min(20, pred_event_count)}')
+            elif label_event_count == 0 and pred_event_count > 0:
+                print(f'  ⚠️  Model predicted events but ground truth has none (False Positives)')
+            elif label_event_count > 0 and pred_event_count == 0:
+                print(f'  ⚠️  Ground truth has events but model predicted none (False Negatives)')
+            
+            debug_count += 1
 
         # dataset specific
         fine_pred = np.zeros_like(fine_scores, int)
@@ -548,6 +612,15 @@ def evaluate(model, dataset, classes, delta=1, window=5, dataset_name='f3set-ten
                     if fine_pred[i, j] == 1:
                         print_pred.append(classes_inv[j + 1])
                 print_preds.append('_'.join(print_pred))
+        
+        # DEBUG: Print final sequences for first few videos
+        if debug_count <= max_debug_videos:
+            print(f'\n[Final Sequences]')
+            pred_sequence = '->'.join(print_preds) if print_preds else '(empty)'
+            gt_sequence = '->'.join(print_gts) if print_gts else '(empty)'
+            print(f'  Predicted sequence: {pred_sequence}')
+            print(f'  Ground truth sequence: {gt_sequence}')
+            print(f'  Match: {"✓" if pred_sequence == gt_sequence else "✗"}')
 
         labels = [int(''.join(str(x) for x in row), 2) for row in fine_label]
         preds = [int(''.join(str(x) for x in row), 2) for row in fine_pred]
