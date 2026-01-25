@@ -331,7 +331,15 @@ class MD_FED(BaseRGBModel):
                     # few-shot loss
                     if self._stage != 2:
                         # coarse-grained localization loss
-                        coarse_loss = F.cross_entropy(coarse_pred.reshape(-1, 2), coarse_label.flatten(), **ce_kwargs)
+                        # Use weighted loss to handle class imbalance (event vs no-event)
+                        # Weight event class (class 1) more heavily to encourage event prediction
+                        class_weights = torch.tensor([1.0, 10.0]).to(self._device)
+                        coarse_loss = F.cross_entropy(
+                            coarse_pred.reshape(-1, 2), 
+                            coarse_label.flatten(), 
+                            weight=class_weights,
+                            **ce_kwargs
+                        )
                         if not math.isnan(coarse_loss.item()):
                             loss += coarse_loss
 
