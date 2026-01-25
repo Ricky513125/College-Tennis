@@ -13,7 +13,15 @@ class SelectDirectoryPage:
         select_directory_page = gr.Group(visible=visible)
         with select_directory_page:
             gr.Markdown("# Video Selector")
-            directory_dropdown = gr.Dropdown(choices=get_video_directories("data"), label="Select Video Directory")
+            # Get directory choices and format for display
+            dir_choices = get_video_directories("data")
+            # Replace "." with a more user-friendly label
+            formatted_choices = ["(Root - videos in data/videos/)" if d == "." else d for d in dir_choices]
+            directory_dropdown = gr.Dropdown(
+                choices=formatted_choices, 
+                label="Select Video Directory",
+                value=formatted_choices[0] if formatted_choices else None
+            )
             video_dropdown = gr.Dropdown(choices=[], label="Select Video File")
 
             # update video files when directory is selected
@@ -37,7 +45,13 @@ class SelectDirectoryPage:
         return select_button
         
     def update_video_files(self, directory_dropdown, video_dropdown):
-        video_files = get_video_files("data", directory_dropdown)
+        # Convert formatted label back to actual directory value
+        if directory_dropdown and directory_dropdown.startswith("(Root"):
+            actual_directory = "."
+        else:
+            actual_directory = directory_dropdown
+        
+        video_files = get_video_files("data", actual_directory)
         
         if not video_files:
             gr.Warning("No video files found in this directory.", duration=10)
@@ -50,7 +64,18 @@ class SelectDirectoryPage:
             gr.Warning("Please select a valid directory and video file.")
             return gr.update(visible=True), gr.update(visible=False), gr.update(value=None), gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(value=None), gr.update(value=None)
         
-        video_path = os.path.join("data", "videos", directory, video)
+        # Convert formatted label back to actual directory value
+        if directory and directory.startswith("(Root"):
+            actual_directory = "."
+        else:
+            actual_directory = directory
+        
+        # Handle "." directory (videos directly in data/videos/)
+        if actual_directory == ".":
+            video_path = os.path.join("data", "videos", video)
+        else:
+            video_path = os.path.join("data", "videos", actual_directory, video)
+        
         frame = show_video_frame(video_path)
         self.next_page.video_path = video_path
         self.next_page.video, self.next_page.total_frames = load_video(video_path)        

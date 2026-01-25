@@ -74,6 +74,15 @@ python generate_annotations.py \
     --output_dir ./ncaa_annotations \
     --dataset f3set-tennis \
     --use_f3ed
+
+
+python generate_annotations.py \
+    --metadata ./ncaa_annotations_rally/rallies_metadata.json \
+    --frame_dir ./ncaa_frames_rally \
+    --model_dir ./F3Set/f3set-model/f3ed \
+    --output_dir ./ncaa_annotations_rally \
+    --dataset f3set-tennis \
+    --use_f3ed
 ```
 
 ## 输出文件
