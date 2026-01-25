@@ -286,9 +286,11 @@ class MD_FED(BaseRGBModel):
     def epoch(self, loader, optimizer=None, scaler=None, lr_scheduler=None, acc_grad_iter=1, fg_weight=5):
         if optimizer is None:
             self._model.eval()
+            mode = "Validation"
         else:
             optimizer.zero_grad()
             self._model.train()
+            mode = "Training"
 
         # coarse-grained frame binary classification weight
         ce_kwargs = {}
@@ -296,6 +298,9 @@ class MD_FED(BaseRGBModel):
             ce_kwargs['weight'] = torch.FloatTensor([1, fg_weight]).to(self._device)
 
         epoch_loss = 0.
+        debug_batch_count = 0
+        max_debug_batches = 3  # 只输出前3个batch的详细信息
+        
         with (torch.no_grad() if optimizer is None else nullcontext()):
             for batch_idx, batch in enumerate(tqdm(loader)):
                 frame = loader.dataset.load_frame_gpu(batch, self._device)
@@ -353,6 +358,87 @@ class MD_FED(BaseRGBModel):
                         fine_loss = masked_fine_loss.sum() / fine_mask.sum()
                         if not math.isnan(fine_loss.item()):
                             loss += fine_loss
+                        
+                        # DEBUG: Print training info for first few batches
+                        if debug_batch_count < max_debug_batches and batch_idx == 0:
+                            print(f'\n{"="*60}')
+                            print(f'{mode} - Batch {batch_idx + 1} (First batch of epoch)')
+                            print(f'{"="*60}')
+                            
+                            # Get dataset info
+                            if hasattr(loader.dataset, '_src_file'):
+                                print(f'Label file: {loader.dataset._src_file}')
+                            
+                            batch_size = coarse_label.shape[0]
+                            clip_len = coarse_label.shape[1]
+                            print(f'Batch size: {batch_size}, Clip length: {clip_len}')
+                            
+                            # Show labels and predictions for first sample in batch
+                            sample_idx = 0
+                            sample_coarse_label = coarse_label[sample_idx].cpu().numpy()
+                            sample_fine_label = fine_label[sample_idx].cpu().numpy()
+                            sample_coarse_pred = torch.softmax(coarse_pred[sample_idx], dim=-1).cpu().numpy()
+                            sample_coarse_pred_class = np.argmax(sample_coarse_pred, axis=-1)
+                            sample_fine_pred = torch.sigmoid(fine_pred[sample_idx]).cpu().numpy()
+                            
+                            print(f'\n[Sample {sample_idx} - Ground Truth Labels]')
+                            label_event_count = np.sum(sample_coarse_label)
+                            print(f'  Event frames: {label_event_count}/{clip_len}')
+                            if label_event_count > 0:
+                                label_positions = np.where(sample_coarse_label == 1)[0]
+                                print(f'  Event positions (first 10): {label_positions[:10].tolist()}')
+                                
+                                # Show fine-grained labels for first event
+                                if len(label_positions) > 0:
+                                    first_event_pos = label_positions[0]
+                                    fine_labels_at_event = []
+                                    for j in range(len(sample_fine_label[0])):
+                                        if sample_fine_label[first_event_pos, j] == 1:
+                                            # Get class name if available
+                                            fine_labels_at_event.append(f'class_{j+1}')
+                                    if fine_labels_at_event:
+                                        print(f'  Fine labels at frame {first_event_pos}: {fine_labels_at_event[:5]}')
+                            else:
+                                print(f'  ⚠️  No events in ground truth for this sample')
+                            
+                            print(f'\n[Sample {sample_idx} - Model Predictions]')
+                            pred_event_count = np.sum(sample_coarse_pred_class)
+                            print(f'  Predicted event frames: {pred_event_count}/{clip_len}')
+                            print(f'  Coarse scores (first 5 frames, class 0): {sample_coarse_pred[:5, 0]}')
+                            print(f'  Coarse scores (first 5 frames, class 1): {sample_coarse_pred[:5, 1]}')
+                            
+                            if pred_event_count > 0:
+                                pred_positions = np.where(sample_coarse_pred_class == 1)[0]
+                                print(f'  Predicted positions (first 10): {pred_positions[:10].tolist()}')
+                                
+                                # Show fine-grained predictions for first prediction
+                                if len(pred_positions) > 0:
+                                    first_pred_pos = pred_positions[0]
+                                    fine_preds_at_pos = []
+                                    for j in range(len(sample_fine_pred[0])):
+                                        if sample_fine_pred[first_pred_pos, j] > 0.3:  # Threshold
+                                            fine_preds_at_pos.append(f'class_{j+1}({sample_fine_pred[first_pred_pos, j]:.2f})')
+                                    if fine_preds_at_pos:
+                                        print(f'  Fine predictions at frame {first_pred_pos}: {fine_preds_at_pos[:5]}')
+                            else:
+                                print(f'  ⚠️  No events predicted')
+                                print(f'  Max class 1 probability: {sample_coarse_pred[:, 1].max():.4f}')
+                                print(f'  Mean class 1 probability: {sample_coarse_pred[:, 1].mean():.4f}')
+                                print(f'  Min class 1 probability: {sample_coarse_pred[:, 1].min():.4f}')
+                            
+                            print(f'\n[Loss Values]')
+                            print(f'  Coarse loss: {coarse_loss.item():.5f}')
+                            print(f'  Fine loss: {fine_loss.item():.5f}')
+                            print(f'  Total loss: {loss.item():.5f}')
+                            
+                            # Show batch statistics
+                            batch_label_counts = [np.sum(coarse_label[i].cpu().numpy()) for i in range(batch_size)]
+                            batch_pred_counts = [np.sum(np.argmax(torch.softmax(coarse_pred[i], dim=-1).cpu().numpy(), axis=-1)) for i in range(batch_size)]
+                            print(f'\n[Batch Statistics]')
+                            print(f'  Samples with events (GT): {sum(1 for c in batch_label_counts if c > 0)}/{batch_size}')
+                            print(f'  Samples with predictions: {sum(1 for c in batch_pred_counts if c > 0)}/{batch_size}')
+                            
+                            debug_batch_count += 1
 
                 if optimizer is not None and loss != 0.:
                     step(optimizer, scaler, loss / acc_grad_iter, lr_scheduler=lr_scheduler,
