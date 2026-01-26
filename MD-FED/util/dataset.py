@@ -7,7 +7,8 @@ DATASETS = [
     'f3set-tennis-sub',
     'shuttleset',
     'finegym-BB',
-    'fs_comp'
+    'fs_comp',
+    'ncaa-rally'  # NCAA rally dataset
 ]
 
 

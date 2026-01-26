@@ -629,7 +629,7 @@ def evaluate(model, dataset, classes, delta=1, window=5, dataset_name='f3set-ten
         # dataset specific
         fine_pred = np.zeros_like(fine_scores, int)
 
-        if 'f3set-tennis-sub' in dataset_name:
+        if 'f3set-tennis-sub' in dataset_name or 'ncaa-rally' in dataset_name:
             for i in range(len(fine_scores)):
                 for start, end in [[0, 2], [2, 5]]:
                     max_idx = np.argmax(fine_scores[i, start:end])
