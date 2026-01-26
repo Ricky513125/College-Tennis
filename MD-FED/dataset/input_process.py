@@ -73,6 +73,34 @@ class FrameReader:
         # Handle video_name format: "video_id/rally_id" -> frame_dir should be "video_id/rally_id/"
         # The video_name already contains the full path relative to frame_dir
         frame_video_path = video_name  # Use video_name as-is for frame directory
+        
+        # Debug: Print path construction for first video
+        if not hasattr(self, '_debug_printed'):
+            print(f"[DEBUG] Video name: {video_name}")
+            print(f"[DEBUG] Frame video path: {frame_video_path}")
+            if self._frame_dir:
+                expected_dir = os.path.join(self._frame_dir, frame_video_path)
+                print(f"[DEBUG] Expected frame directory: {expected_dir}")
+                print(f"[DEBUG] Directory exists: {os.path.exists(expected_dir)}")
+                if os.path.exists(expected_dir):
+                    files = os.listdir(expected_dir)
+                    jpg_files = [f for f in files if f.endswith('.jpg')]
+                    print(f"[DEBUG] Found {len(jpg_files)} .jpg files in directory")
+            self._debug_printed = True
+
+        # Debug: Print first frame path to verify construction
+        if not hasattr(self, '_debug_frame_printed'):
+            first_frame_num = start if start >= 0 else 0
+            first_img_num = FrameReader.IMG_NAME.format(first_frame_num)
+            first_frame_path = os.path.join(self._frame_dir, frame_video_path, first_img_num) if self._frame_dir else None
+            print(f"[DEBUG] First frame: num={first_frame_num}, img={first_img_num}, path={first_frame_path}")
+            print(f"[DEBUG] Frame range: {start} to {end}, stride={stride}")
+            if first_frame_path and os.path.exists(os.path.dirname(first_frame_path)):
+                dir_files = sorted([f for f in os.listdir(os.path.dirname(first_frame_path)) if f.endswith('.jpg')])
+                if dir_files:
+                    frame_nums = [int(f.replace('.jpg', '')) for f in dir_files]
+                    print(f"[DEBUG] Available frames in dir: {min(frame_nums)} to {max(frame_nums)} (total: {len(frame_nums)})")
+            self._debug_frame_printed = True
 
         for frame_num in range(start, end, stride):
             if frame_num < 0:
