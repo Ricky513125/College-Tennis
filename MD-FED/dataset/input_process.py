@@ -35,10 +35,25 @@ class FrameReader:
         self._same_transform = same_transform
 
     def read_frame(self, frame_path, is_flow=False):
-        img = torchvision.io.read_image(frame_path).float() / 255
         if is_flow:
-            img = img[1:, :, :]  # GB channels contain data
-        return img
+            # Flow files are .npy, not .jpg
+            # Check if path ends with .jpg and convert to .npy
+            if frame_path.endswith('.jpg'):
+                # This shouldn't happen anymore, but keep as safeguard
+                print(f"Warning: Unexpected .jpg path for flow: {frame_path}")
+                return torch.zeros(2, 224, 224)
+            # Load numpy flow file
+            flow = np.load(frame_path)
+            # Convert to torch tensor and normalize if needed
+            flow = torch.from_numpy(flow).float()
+            if flow.shape[0] != 2:
+                # If shape is (H, W, 2), transpose to (2, H, W)
+                if len(flow.shape) == 3 and flow.shape[2] == 2:
+                    flow = flow.permute(2, 0, 1)
+            return flow
+        else:
+            img = torchvision.io.read_image(frame_path).float() / 255
+            return img
 
     def normalize_keypoints(self, keypoints, image_width=1280, image_height=720, reference_keypoints=(5, 6)):
         num_people, num_joints, _ = keypoints.shape
@@ -113,7 +128,11 @@ class FrameReader:
             if self._frame_dir is not None:
                 frame_path = os.path.join(self._frame_dir, frame_video_path, img_num)
             if self._flow_dir is not None:
-                flow_path = os.path.join(self._flow_dir, frame_video_path, img_num)
+                # Flow files are named as frame pairs: 000000_000001.npy
+                # For frame N, we want flow from N to N+1
+                next_frame_num = frame_num + 1
+                flow_filename = f'{frame_num:06d}_{next_frame_num:06d}.npy'
+                flow_path = os.path.join(self._flow_dir, frame_video_path, flow_filename)
             try:
                 # rgb image
                 if self._frame_dir is not None:
@@ -154,7 +173,14 @@ class FrameReader:
 
                 # optical flow
                 if self._flow_dir is not None:
-                    flow = self.read_frame(flow_path, is_flow=True)
+                    # Check if flow file exists before trying to read
+                    if not os.path.exists(flow_path):
+                        # Flow file doesn't exist, use zero flow
+                        if frame_num == start or (frame_num - start) < 3:
+                            print(f"Warning: Flow file not found (using zero flow): {flow_path}")
+                        flow = torch.zeros(2, 224, 224)
+                    else:
+                        flow = self.read_frame(flow_path, is_flow=True)
 
                 # 2D skeleton
                 if self._pose_dir is not None and skeletons is not None:
