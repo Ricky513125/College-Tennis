@@ -46,7 +46,7 @@ def main():
         '--dataset', args.dataset,
         '--pose_dir', args.pose_dir,
         '--output_dir', args.output_dir,
-        '--num_epochs', '150',           # 大幅增加训练轮数
+        '--num_epochs', '1000',           # 大幅增加训练轮数
         '--batch_size', '4',
         '--learning_rate', '0.0003',    # 更小的学习率
         '--clip_len', '128',            # 增加 clip 长度
