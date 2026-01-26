@@ -339,8 +339,9 @@ class MD_FED(BaseRGBModel):
                         # Use weighted loss to handle class imbalance (event vs no-event)
                         # Weight event class (class 1) more heavily to encourage event prediction
                         # Update ce_kwargs with our class weights (override if weight already exists)
-                        # Increased from 10.0 to 20.0 to better handle class imbalance
-                        class_weights = torch.tensor([1.0, 20.0]).to(self._device)
+                        # Increased from 20.0 to 100.0 to handle severe class imbalance (118:1 ratio)
+                        # Event frames only account for 0.84% of total frames
+                        class_weights = torch.tensor([1.0, 100.0]).to(self._device)
                         ce_kwargs_weighted = ce_kwargs.copy()
                         ce_kwargs_weighted['weight'] = class_weights
                         coarse_loss = F.cross_entropy(
