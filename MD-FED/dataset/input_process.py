@@ -68,6 +68,74 @@ class FrameReader:
 
         return keypoints
 
+    def _convert_json_skeleton_to_array(self, skeleton_data):
+        """
+        Convert JSON skeleton format to the array format expected by the model.
+        
+        JSON format (from generate_skeleton_annotations.py):
+        {
+            "annotations": [
+                {
+                    "frame": 0,
+                    "persons": [
+                        {
+                            "person_id": 0,
+                            "keypoints": {
+                                "nose": {"x": 100.5, "y": 200.3, "visible": 1.0},
+                                ...
+                            }
+                        }
+                    ]
+                },
+                ...
+            ]
+        }
+        
+        Expected output format:
+        {
+            'keypoint': np.array of shape (num_people, num_frames, num_joints, 2)
+        }
+        """
+        if 'annotations' not in skeleton_data:
+            return None
+        
+        annotations = skeleton_data['annotations']
+        if len(annotations) == 0:
+            return None
+        
+        # COCO keypoint order (17 keypoints)
+        keypoint_names = [
+            'nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear',
+            'left_shoulder', 'right_shoulder', 'left_elbow', 'right_elbow',
+            'left_wrist', 'right_wrist', 'left_hip', 'right_hip',
+            'left_knee', 'right_knee', 'left_ankle', 'right_ankle'
+        ]
+        
+        num_frames = len(annotations)
+        num_joints = 17
+        
+        # Determine max number of people across all frames
+        max_people = max(len(frame['persons']) for frame in annotations)
+        if max_people == 0:
+            return None
+        
+        # Initialize array: (num_people, num_frames, num_joints, 2)
+        keypoints_array = np.zeros((max_people, num_frames, num_joints, 2), dtype=np.float32)
+        
+        for frame_idx, frame_data in enumerate(annotations):
+            for person in frame_data['persons']:
+                person_id = person['person_id']
+                if person_id >= max_people:
+                    continue
+                
+                kpts = person.get('keypoints', {})
+                for joint_idx, joint_name in enumerate(keypoint_names):
+                    if joint_name in kpts:
+                        keypoints_array[person_id, frame_idx, joint_idx, 0] = kpts[joint_name]['x']
+                        keypoints_array[person_id, frame_idx, joint_idx, 1] = kpts[joint_name]['y']
+        
+        return {'keypoint': keypoints_array}
+
     def load_frames(self, video_name, start, end, pad=False, stride=1, randomize=False):
         rand_crop_state = None
         rand_state_backup = None
@@ -79,11 +147,28 @@ class FrameReader:
 
         skeletons, d = None, None
         if self._pose_dir is not None:
-            # For skeleton, use the base video name (before first slash) if video_name contains slash
-            base_video_name = video_name.split('/')[0] if '/' in video_name else video_name
-            pickle_path = os.path.join(self._pose_dir, '%s.pkl' % base_video_name)
-            if os.path.exists(pickle_path):
-                skeletons = pd.read_pickle(pickle_path)
+            # For NCAA rally data: video_name format is "video_id/rally_id"
+            # Skeleton files are named: "video_id_rally_id_skeleton.json"
+            # Example: "6VSmpCSgY7M/rally_0540_0550" -> "6VSmpCSgY7M_rally_0540_0550_skeleton.json"
+            
+            # Convert video_name format to skeleton filename format
+            skeleton_filename = video_name.replace('/', '_') + '_skeleton.json'
+            skeleton_path = os.path.join(self._pose_dir, skeleton_filename)
+            
+            # Try JSON format first (NCAA format)
+            if os.path.exists(skeleton_path):
+                import json
+                with open(skeleton_path, 'r') as f:
+                    skeleton_data = json.load(f)
+                # Convert JSON skeleton data to the expected format
+                # Assuming JSON has 'annotations' with frame-by-frame keypoints
+                skeletons = self._convert_json_skeleton_to_array(skeleton_data)
+            else:
+                # Fall back to original PKL format (F3Set format)
+                base_video_name = video_name.split('/')[0] if '/' in video_name else video_name
+                pickle_path = os.path.join(self._pose_dir, '%s.pkl' % base_video_name)
+                if os.path.exists(pickle_path):
+                    skeletons = pd.read_pickle(pickle_path)
 
         # Handle video_name format: "video_id/rally_id" -> frame_dir should be "video_id/rally_id/"
         # The video_name already contains the full path relative to frame_dir
