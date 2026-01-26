@@ -64,10 +64,15 @@ class FrameReader:
 
         skeletons, d = None, None
         if self._pose_dir is not None:
-            pickle_path = os.path.join(self._pose_dir, '%s.pkl' % video_name)
+            # For skeleton, use the base video name (before first slash) if video_name contains slash
+            base_video_name = video_name.split('/')[0] if '/' in video_name else video_name
+            pickle_path = os.path.join(self._pose_dir, '%s.pkl' % base_video_name)
             if os.path.exists(pickle_path):
                 skeletons = pd.read_pickle(pickle_path)
 
+        # Handle video_name format: "video_id/rally_id" -> frame_dir should be "video_id/rally_id/"
+        # The video_name already contains the full path relative to frame_dir
+        frame_video_path = video_name  # Use video_name as-is for frame directory
 
         for frame_num in range(start, end, stride):
             if frame_num < 0:
@@ -78,9 +83,9 @@ class FrameReader:
             keypoints = torch.zeros(2, 17, 2)
             flow = torch.zeros(2, 224, 224)
             if self._frame_dir is not None:
-                frame_path = os.path.join(self._frame_dir, video_name, img_num)
+                frame_path = os.path.join(self._frame_dir, frame_video_path, img_num)
             if self._flow_dir is not None:
-                flow_path = os.path.join(self._flow_dir, video_name, img_num)
+                flow_path = os.path.join(self._flow_dir, frame_video_path, img_num)
             try:
                 # rgb image
                 if self._frame_dir is not None:
@@ -97,9 +102,14 @@ class FrameReader:
                                 print(f"  Parent dir exists, found {len(jpg_files)} .jpg files")
                                 if jpg_files:
                                     print(f"  First few files: {sorted(jpg_files)[:5]}")
-                                    print(f"  Looking for: {img_num}")
+                                    print(f"  Last few files: {sorted(jpg_files)[-5:]}")
+                                    print(f"  Looking for: {img_num} (frame_num={frame_num})")
                                     if img_num not in jpg_files:
                                         print(f"  ⚠️  File {img_num} not in directory!")
+                                        # Check what frame numbers are available
+                                        available_frames = sorted([int(f.replace('.jpg', '')) for f in jpg_files])
+                                        print(f"  Available frame range: {available_frames[0]} to {available_frames[-1]}")
+                                        print(f"  Requested frame: {frame_num}")
                             else:
                                 print(f"  Parent directory does not exist: {parent_dir}")
                                 print(f"  Expected: {os.path.join(self._frame_dir, video_name)}")
@@ -162,9 +172,9 @@ class FrameReader:
                 print(f"  Frame directory: {self._frame_dir}")
                 print(f"  Video name: {video_name}")
                 print(f"  Frame range: {start} to {end}")
-                print(f"  Expected path: {os.path.join(self._frame_dir, video_name) if self._frame_dir else 'N/A'}")
+                print(f"  Expected path: {os.path.join(self._frame_dir, frame_video_path) if self._frame_dir else 'N/A'}")
                 # Check if video directory exists
-                video_dir = os.path.join(self._frame_dir, video_name) if self._frame_dir else None
+                video_dir = os.path.join(self._frame_dir, frame_video_path) if self._frame_dir else None
                 if video_dir and os.path.exists(video_dir):
                     frame_files = [f for f in os.listdir(video_dir) if f.endswith('.jpg')]
                     print(f"  Found {len(frame_files)} frame files in video directory")
