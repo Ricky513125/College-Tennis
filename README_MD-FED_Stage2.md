@@ -57,11 +57,11 @@ python train_md_fed_stage2.py \
     --manual_annotations ./manual_annotations.json \
     --frame_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_frames_rally \
     --flow_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_optical_flow_rally \
-    --pose_dir /path/to/skeleton/pkl/files \
+    --pose_dir /mnt/ssd2/lingyu/Tennis/data/TENNIS/skeletons/f3set-tennis \
     --stage1_model_dir ./md_fed_outputs/stage1 \
     --output_dir ./md_fed_outputs/stage2 \
     --batch_size 4 \
-    --num_epochs 50 \
+    --num_epochs 500 \
     --learning_rate 0.001 \
     --clip_len 96 \
     --stride 2

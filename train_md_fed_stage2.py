@@ -177,14 +177,15 @@ def main():
     print("=" * 60)
     
     # Build command to call MD-FED training script
-    md_fed_train_script = os.path.join('MD-FED', 'train_MD-FED.py')
+    # Note: We'll change to MD-FED directory, so use relative path
+    md_fed_train_script = 'train_MD-FED.py'
     
     cmd = [
         sys.executable, md_fed_train_script,
         args.dataset_name,
-        '--frame_dir', args.frame_dir,
-        '--flow_dir', args.flow_dir,
-        '--pose_dir', args.pose_dir,
+        '--frame_dir', os.path.abspath(args.frame_dir),
+        '--flow_dir', os.path.abspath(args.flow_dir),
+        '--pose_dir', os.path.abspath(args.pose_dir),
         '--stage', '2',
         '--visual_arch', args.visual_arch,
         '--skeleton_arch', args.skeleton_arch,
@@ -193,7 +194,7 @@ def main():
         '--learning_rate', str(args.learning_rate),
         '--clip_len', str(args.clip_len),
         '--stride', str(args.stride),
-        '-s', args.output_dir,
+        '-s', os.path.abspath(args.output_dir),
         '--num_samples', '-1',
         '--criterion', 'loss'
     ]
