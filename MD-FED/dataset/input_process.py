@@ -84,6 +84,27 @@ class FrameReader:
             try:
                 # rgb image
                 if self._frame_dir is not None:
+                    # Check if frame exists before trying to read
+                    if not os.path.exists(frame_path):
+                        # Only print first few missing frames to avoid spam
+                        if frame_num == start or (frame_num - start) < 3:
+                            print(f"Warning: Frame not found: {frame_path}")
+                            # Check if parent directory exists
+                            parent_dir = os.path.dirname(frame_path)
+                            if os.path.exists(parent_dir):
+                                files = os.listdir(parent_dir)
+                                jpg_files = [f for f in files if f.endswith('.jpg')]
+                                print(f"  Parent dir exists, found {len(jpg_files)} .jpg files")
+                                if jpg_files:
+                                    print(f"  First few files: {sorted(jpg_files)[:5]}")
+                                    print(f"  Looking for: {img_num}")
+                                    if img_num not in jpg_files:
+                                        print(f"  ⚠️  File {img_num} not in directory!")
+                            else:
+                                print(f"  Parent directory does not exist: {parent_dir}")
+                                print(f"  Expected: {os.path.join(self._frame_dir, video_name)}")
+                        n_pad_end += 1
+                        continue
                     img = self.read_frame(frame_path)
 
                 # optical flow
@@ -137,8 +158,21 @@ class FrameReader:
         # In the multicrop case, the shape is (B, T, C, H, W)
         if self._frame_dir is not None:
             if len(ret_rgb) == 0:
-                print(self._frame_dir)
-                print(video_name, start, end)
+                print(f"ERROR: No frames found!")
+                print(f"  Frame directory: {self._frame_dir}")
+                print(f"  Video name: {video_name}")
+                print(f"  Frame range: {start} to {end}")
+                print(f"  Expected path: {os.path.join(self._frame_dir, video_name) if self._frame_dir else 'N/A'}")
+                # Check if video directory exists
+                video_dir = os.path.join(self._frame_dir, video_name) if self._frame_dir else None
+                if video_dir and os.path.exists(video_dir):
+                    frame_files = [f for f in os.listdir(video_dir) if f.endswith('.jpg')]
+                    print(f"  Found {len(frame_files)} frame files in video directory")
+                    if len(frame_files) > 0:
+                        print(f"  First few frames: {sorted(frame_files)[:5]}")
+                else:
+                    print(f"  Video directory does not exist: {video_dir}")
+                raise RuntimeError(f"No frames found for video {video_name} in {self._frame_dir}")
             ret_rgb = torch.stack(ret_rgb, dim=int(len(ret_rgb[0].shape) == 4))
             if self._same_transform:
                 ret_rgb = self._img_transform(ret_rgb)
