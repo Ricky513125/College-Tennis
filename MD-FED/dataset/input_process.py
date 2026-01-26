@@ -94,15 +94,19 @@ class FrameReader:
                         # Debug: Check if the issue is with frame indexing
                         # For the first few missing frames, show detailed info
                         if frame_num == start or (frame_num - start) < 3:
+                            print(f"Warning: Frame not found: {frame_path}")
                             # Check if parent directory exists and list actual files
                             parent_dir = os.path.dirname(frame_path)
                             if os.path.exists(parent_dir):
                                 files = os.listdir(parent_dir)
                                 jpg_files = sorted([f for f in files if f.endswith('.jpg')])
+                                print(f"  Parent dir exists, found {len(jpg_files)} .jpg files")
                                 if jpg_files:
                                     # Extract frame numbers from filenames
                                     available_frames = sorted([int(f.replace('.jpg', '')) for f in jpg_files])
                                     print(f"  Available frame indices: {available_frames[0]} to {available_frames[-1]} (total: {len(available_frames)})")
+                                    print(f"  First few files: {sorted(jpg_files)[:5]}")
+                                    print(f"  Last few files: {sorted(jpg_files)[-5:]}")
                                     print(f"  Requested frame index: {frame_num} -> looking for file: {img_num}")
                                     if frame_num < available_frames[0] or frame_num > available_frames[-1]:
                                         print(f"  ⚠️  Frame index {frame_num} is OUT OF RANGE!")
@@ -113,29 +117,9 @@ class FrameReader:
                                         similar = [f for f in jpg_files if abs(int(f.replace('.jpg', '')) - frame_num) < 5]
                                         if similar:
                                             print(f"  Nearby files: {similar[:5]}")
-                        if not os.path.exists(frame_path):
-                        # Only print first few missing frames to avoid spam
-                        if frame_num == start or (frame_num - start) < 3:
-                            print(f"Warning: Frame not found: {frame_path}")
-                            # Check if parent directory exists
-                            parent_dir = os.path.dirname(frame_path)
-                            if os.path.exists(parent_dir):
-                                files = os.listdir(parent_dir)
-                                jpg_files = [f for f in files if f.endswith('.jpg')]
-                                print(f"  Parent dir exists, found {len(jpg_files)} .jpg files")
-                                if jpg_files:
-                                    print(f"  First few files: {sorted(jpg_files)[:5]}")
-                                    print(f"  Last few files: {sorted(jpg_files)[-5:]}")
-                                    print(f"  Looking for: {img_num} (frame_num={frame_num})")
-                                    if img_num not in jpg_files:
-                                        print(f"  ⚠️  File {img_num} not in directory!")
-                                        # Check what frame numbers are available
-                                        available_frames = sorted([int(f.replace('.jpg', '')) for f in jpg_files])
-                                        print(f"  Available frame range: {available_frames[0]} to {available_frames[-1]}")
-                                        print(f"  Requested frame: {frame_num}")
                             else:
                                 print(f"  Parent directory does not exist: {parent_dir}")
-                                print(f"  Expected: {os.path.join(self._frame_dir, video_name)}")
+                                print(f"  Expected: {os.path.join(self._frame_dir, frame_video_path)}")
                         n_pad_end += 1
                         continue
                     img = self.read_frame(frame_path)
