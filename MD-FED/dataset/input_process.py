@@ -91,6 +91,29 @@ class FrameReader:
                 if self._frame_dir is not None:
                     # Check if frame exists before trying to read
                     if not os.path.exists(frame_path):
+                        # Debug: Check if the issue is with frame indexing
+                        # For the first few missing frames, show detailed info
+                        if frame_num == start or (frame_num - start) < 3:
+                            # Check if parent directory exists and list actual files
+                            parent_dir = os.path.dirname(frame_path)
+                            if os.path.exists(parent_dir):
+                                files = os.listdir(parent_dir)
+                                jpg_files = sorted([f for f in files if f.endswith('.jpg')])
+                                if jpg_files:
+                                    # Extract frame numbers from filenames
+                                    available_frames = sorted([int(f.replace('.jpg', '')) for f in jpg_files])
+                                    print(f"  Available frame indices: {available_frames[0]} to {available_frames[-1]} (total: {len(available_frames)})")
+                                    print(f"  Requested frame index: {frame_num} -> looking for file: {img_num}")
+                                    if frame_num < available_frames[0] or frame_num > available_frames[-1]:
+                                        print(f"  ⚠️  Frame index {frame_num} is OUT OF RANGE!")
+                                        print(f"  Valid range: {available_frames[0]} to {available_frames[-1]}")
+                                    elif img_num not in jpg_files:
+                                        print(f"  ⚠️  File {img_num} not found, but index {frame_num} is in range")
+                                        # Check if there's a file with similar name
+                                        similar = [f for f in jpg_files if abs(int(f.replace('.jpg', '')) - frame_num) < 5]
+                                        if similar:
+                                            print(f"  Nearby files: {similar[:5]}")
+                        if not os.path.exists(frame_path):
                         # Only print first few missing frames to avoid spam
                         if frame_num == start or (frame_num - start) < 3:
                             print(f"Warning: Frame not found: {frame_path}")
@@ -162,7 +185,16 @@ class FrameReader:
                 if self._pose_dir is not None:
                     ret_sk.append(keypoints)
 
-            except (RuntimeError, IndexError):
+            except (RuntimeError, IndexError) as e:
+                # Only print first few errors to avoid spam
+                if frame_num == start or (frame_num - start) < 3:
+                    print(f"Warning: Exception reading frame {frame_num} ({img_num}): {type(e).__name__}: {e}")
+                    if self._frame_dir is not None:
+                        print(f"  Frame path: {frame_path}")
+                        if os.path.exists(frame_path):
+                            print(f"  File exists but failed to read")
+                        else:
+                            print(f"  File does not exist")
                 n_pad_end += 1
                 
         # In the multicrop case, the shape is (B, T, C, H, W)
