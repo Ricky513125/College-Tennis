@@ -365,15 +365,20 @@ class MD_FED(BaseRGBModel):
                         fine_bce_loss = fine_bce_loss * coarse_mask.unsqueeze(2).expand_as(fine_pred)
                         fine_mask = coarse_label.unsqueeze(2).expand_as(fine_pred)
                         masked_fine_loss = fine_bce_loss * fine_mask
-                        fine_loss = masked_fine_loss.sum() / fine_mask.sum()
-                        # Check for nan and handle it
-                        if math.isnan(fine_loss.item()):
-                            print(f"\n⚠️  Warning: Fine loss is nan!")
-                            print(f"  Fine mask sum: {fine_mask.sum().item()}")
-                            print(f"  Fine pred contains nan: {torch.isnan(fine_pred).any().item()}")
-                            # Don't add to loss, but keep loss as 0.0
-                        else:
-                            loss += fine_loss
+                        
+                        # Check if there are any event frames before computing fine loss
+                        fine_mask_sum = fine_mask.sum()
+                        if fine_mask_sum > 0:
+                            fine_loss = masked_fine_loss.sum() / fine_mask_sum
+                            # Check for nan and handle it
+                            if math.isnan(fine_loss.item()):
+                                print(f"\n⚠️  Warning: Fine loss is nan!")
+                                print(f"  Fine mask sum: {fine_mask_sum.item()}")
+                                print(f"  Fine pred contains nan: {torch.isnan(fine_pred).any().item()}")
+                                # Don't add to loss
+                            else:
+                                loss += fine_loss
+                        # else: No event frames in this batch, skip fine loss (this is expected with sparse events)
                         
                         # DEBUG: Print training info for first few batches
                         if debug_batch_count < max_debug_batches and batch_idx == 0:
