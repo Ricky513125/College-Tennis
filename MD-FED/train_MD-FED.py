@@ -378,7 +378,9 @@ class MD_FED(BaseRGBModel):
                                 # Don't add to loss
                             else:
                                 loss += fine_loss
-                        # else: No event frames in this batch, skip fine loss (this is expected with sparse events)
+                        else:
+                            # No event frames in this batch, set fine_loss to 0 for debugging purposes
+                            fine_loss = torch.tensor(0.0, device=self._device)
                         
                         # DEBUG: Print training info for first few batches
                         if debug_batch_count < max_debug_batches and batch_idx == 0:
