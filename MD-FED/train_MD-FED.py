@@ -339,9 +339,10 @@ class MD_FED(BaseRGBModel):
                         # Use weighted loss to handle class imbalance (event vs no-event)
                         # Weight event class (class 1) more heavily to encourage event prediction
                         # Update ce_kwargs with our class weights (override if weight already exists)
-                        # Increased from 20.0 to 100.0 to handle severe class imbalance (118:1 ratio)
+                        # Increased from 20.0 to 50.0 to handle severe class imbalance (118:1 ratio)
                         # Event frames only account for 0.84% of total frames
-                        class_weights = torch.tensor([1.0, 100.0]).to(self._device)
+                        # Reduced from 100.0 to 50.0 to avoid numerical instability (nan)
+                        class_weights = torch.tensor([1.0, 50.0]).to(self._device)
                         ce_kwargs_weighted = ce_kwargs.copy()
                         ce_kwargs_weighted['weight'] = class_weights
                         coarse_loss = F.cross_entropy(
@@ -349,7 +350,14 @@ class MD_FED(BaseRGBModel):
                             coarse_label.flatten(), 
                             **ce_kwargs_weighted
                         )
-                        if not math.isnan(coarse_loss.item()):
+                        # Check for nan and handle it
+                        if math.isnan(coarse_loss.item()):
+                            print(f"\n⚠️  Warning: Coarse loss is nan!")
+                            print(f"  Coarse pred min/max: {coarse_pred.min().item():.5f}/{coarse_pred.max().item():.5f}")
+                            print(f"  Coarse pred contains nan: {torch.isnan(coarse_pred).any().item()}")
+                            print(f"  Class weights: {class_weights}")
+                            # Don't add to loss, but keep loss as 0.0
+                        else:
                             loss += coarse_loss
 
                         # fine-grained multi-label loss
@@ -358,7 +366,13 @@ class MD_FED(BaseRGBModel):
                         fine_mask = coarse_label.unsqueeze(2).expand_as(fine_pred)
                         masked_fine_loss = fine_bce_loss * fine_mask
                         fine_loss = masked_fine_loss.sum() / fine_mask.sum()
-                        if not math.isnan(fine_loss.item()):
+                        # Check for nan and handle it
+                        if math.isnan(fine_loss.item()):
+                            print(f"\n⚠️  Warning: Fine loss is nan!")
+                            print(f"  Fine mask sum: {fine_mask.sum().item()}")
+                            print(f"  Fine pred contains nan: {torch.isnan(fine_pred).any().item()}")
+                            # Don't add to loss, but keep loss as 0.0
+                        else:
                             loss += fine_loss
                         
                         # DEBUG: Print training info for first few batches
@@ -429,9 +443,12 @@ class MD_FED(BaseRGBModel):
                                 print(f'  Min class 1 probability: {sample_coarse_pred[:, 1].min():.4f}')
                             
                             print(f'\n[Loss Values]')
-                            print(f'  Coarse loss: {coarse_loss.item():.5f}')
-                            print(f'  Fine loss: {fine_loss.item():.5f}')
-                            print(f'  Total loss: {loss.item():.5f}')
+                            coarse_loss_val = coarse_loss.item() if hasattr(coarse_loss, 'item') else coarse_loss
+                            fine_loss_val = fine_loss.item() if hasattr(fine_loss, 'item') else fine_loss
+                            loss_val = loss.item() if hasattr(loss, 'item') else loss
+                            print(f'  Coarse loss: {coarse_loss_val:.5f}')
+                            print(f'  Fine loss: {fine_loss_val:.5f}')
+                            print(f'  Total loss: {loss_val:.5f}')
                             
                             # Show batch statistics
                             batch_label_counts = [np.sum(coarse_label[i].cpu().detach().numpy()) for i in range(batch_size)]
@@ -442,11 +459,24 @@ class MD_FED(BaseRGBModel):
                             
                             debug_batch_count += 1
 
-                if optimizer is not None and loss != 0.:
+                # Convert loss to tensor if it's still a float (happens when both losses are nan)
+                if isinstance(loss, float):
+                    if math.isnan(loss) or loss == 0.:
+                        print(f"\n⚠️  Warning: Loss is {loss}, skipping this batch")
+                        continue
+                    # Should not happen, but handle it
+                    loss = torch.tensor(loss, device=self._device, requires_grad=True)
+                
+                # Check for nan
+                if math.isnan(loss.item()):
+                    print(f"\n⚠️  Warning: Loss is nan, skipping this batch")
+                    continue
+                
+                if optimizer is not None and loss.item() != 0.:
                     step(optimizer, scaler, loss / acc_grad_iter, lr_scheduler=lr_scheduler,
                          backward_only=(batch_idx + 1) % acc_grad_iter != 0)
 
-                if loss != 0.:
+                if loss.item() != 0.:
                     epoch_loss += loss.detach().item()
 
         return epoch_loss / len(loader)
