@@ -17,7 +17,18 @@ md_fed_dir = os.path.join(os.path.dirname(__file__), 'MD-FED')
 if os.path.exists(md_fed_dir):
     sys.path.insert(0, md_fed_dir)
 
-from train_MD_FED import MD_FED, evaluate, get_best_epoch_and_history
+# Import train_MD-FED.py using importlib (handles hyphen in filename)
+import importlib.util
+train_md_fed_path = os.path.join(md_fed_dir, 'train_MD-FED.py')
+spec = importlib.util.spec_from_file_location("train_MD_FED", train_md_fed_path)
+train_MD_FED = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(train_MD_FED)
+
+# Import from the module
+MD_FED = train_MD_FED.MD_FED
+evaluate = train_MD_FED.evaluate
+get_best_epoch_and_history = train_MD_FED.get_best_epoch_and_history
+
 from dataset.input_process import ActionSeqVideoDataset
 from util.dataset import load_classes
 from util.io import load_json, store_json

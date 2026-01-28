@@ -17,10 +17,22 @@ md_fed_dir = os.path.join(os.path.dirname(__file__), 'MD-FED')
 if os.path.exists(md_fed_dir):
     sys.path.insert(0, md_fed_dir)
 
-from train_MD_FED import (
-    MD_FED, evaluate, get_best_epoch_and_history, get_datasets,
-    get_lr_scheduler, store_config, get_args
-)
+# Import train_MD-FED.py using importlib (handles hyphen in filename)
+import importlib.util
+train_md_fed_path = os.path.join(md_fed_dir, 'train_MD-FED.py')
+spec = importlib.util.spec_from_file_location("train_MD_FED", train_md_fed_path)
+train_MD_FED = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(train_MD_FED)
+
+# Import from the module
+MD_FED = train_MD_FED.MD_FED
+evaluate = train_MD_FED.evaluate
+get_best_epoch_and_history = train_MD_FED.get_best_epoch_and_history
+get_datasets = train_MD_FED.get_datasets
+get_lr_scheduler = train_MD_FED.get_lr_scheduler
+store_config = train_MD_FED.store_config
+get_args = train_MD_FED.get_args
+
 from torch.optim.lr_scheduler import ChainedScheduler, LinearLR, CosineAnnealingLR
 from dataset.input_process import ActionSeqDataset, ActionSeqVideoDataset
 from util.dataset import load_classes
@@ -233,38 +245,38 @@ def main():
     parser.add_argument(
         '--clip_len',
         type=int,
-        default=96,
-        help='Clip length (default: 96)'
+        default=None,
+        help='Clip length (default: from Stage 2 config)'
     )
     parser.add_argument(
         '--crop_dim',
         type=int,
-        default=224,
-        help='Crop dimension (default: 224)'
+        default=None,
+        help='Crop dimension (default: from Stage 2 config)'
     )
     parser.add_argument(
         '--window',
         type=int,
-        default=5,
-        help='NMS window size (default: 5)'
+        default=None,
+        help='NMS window size (default: from Stage 2 config)'
     )
     parser.add_argument(
         '--visual_arch',
         type=str,
-        default='rny002_tsm',
-        help='Visual architecture (default: rny002_tsm)'
+        default=None,
+        help='Visual architecture (default: from Stage 2 config)'
     )
     parser.add_argument(
         '--skeleton_arch',
         type=str,
-        default='stgcn++',
-        help='Skeleton architecture (default: stgcn++, not used in Stage 3)'
+        default=None,
+        help='Skeleton architecture (default: from Stage 2 config, not used in Stage 3)'
     )
     parser.add_argument(
         '--temporal_arch',
         type=str,
-        default='gru',
-        help='Temporal architecture (default: gru)'
+        default=None,
+        help='Temporal architecture (default: from Stage 2 config)'
     )
     parser.add_argument(
         '--device',
@@ -297,12 +309,19 @@ def main():
     stage2_config = load_json(stage2_config_file)
     
     # Use Stage 2 config values if not specified
-    visual_arch = args.visual_arch if args.visual_arch else stage2_config.get('visual_arch', 'rny002_tsm')
-    skeleton_arch = args.skeleton_arch if args.skeleton_arch else stage2_config.get('skeleton_arch', 'stgcn++')
-    temporal_arch = args.temporal_arch if args.temporal_arch else stage2_config.get('temporal_arch', 'gru')
-    clip_len = args.clip_len if args.clip_len else stage2_config.get('clip_len', 96)
-    crop_dim = args.crop_dim if args.crop_dim else stage2_config.get('crop_dim', 224)
-    window = args.window if args.window else stage2_config.get('window', 5)
+    visual_arch = args.visual_arch if args.visual_arch is not None else stage2_config.get('visual_arch', 'rny002_tsm')
+    skeleton_arch = args.skeleton_arch if args.skeleton_arch is not None else stage2_config.get('skeleton_arch', 'stgcn++')
+    temporal_arch = args.temporal_arch if args.temporal_arch is not None else stage2_config.get('temporal_arch', 'gru')
+    clip_len = args.clip_len if args.clip_len is not None else stage2_config.get('clip_len', 96)
+    crop_dim = args.crop_dim if args.crop_dim is not None else stage2_config.get('crop_dim', 224)
+    window = args.window if args.window is not None else stage2_config.get('window', 5)
+    
+    print(f"Using configuration:")
+    print(f"  Visual arch: {visual_arch}")
+    print(f"  Temporal arch: {temporal_arch}")
+    print(f"  Clip len: {clip_len}")
+    print(f"  Crop dim: {crop_dim}")
+    print(f"  Window: {window}")
     
     # Step 3: Load classes
     elements_file = os.path.join(data_dir, 'elements.txt')
@@ -314,7 +333,6 @@ def main():
     
     # Step 4: Create datasets
     print(f"\nStep 3: Creating datasets...")
-    from dataset.input_process import ActionSeqDataset, ActionSeqVideoDataset
     
     train_json = os.path.join(data_dir, 'train.json')
     val_json = os.path.join(data_dir, 'val.json')
