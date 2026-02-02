@@ -631,7 +631,7 @@ def main():
     
     print(f'\n{"="*60}')
     print(f'Training Complete!')
-    print(f"{'="*60}")
+    print(f"{'='*60}")
     print(f'\n📊 Final Results:')
     print(f'   Best epoch: {best_epoch}')
     print(f'   Best Edit score: {best_edit_score:.4f}')
