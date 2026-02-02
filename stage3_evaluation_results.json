@@ -1,0 +1,11 @@
+{
+  "f1_lcl": 0.433,
+  "f1_event": 0.110,
+  "f1_element": 0.180,
+  "edit_score": 40.23,
+  "num_videos": 96,
+  "delta": 10,
+  "model": "MD-FED Stage 3",
+  "checkpoint": "./MD-FED/md_fed_outputs/stage3_01281253",
+  "best_epoch": 490
+}
