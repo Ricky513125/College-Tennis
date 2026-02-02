@@ -36,7 +36,7 @@ python improve_stage3_training.py \
     --manual_annotations manual_annotations.json \
     --frame_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_frames_rally \
     --flow_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_optical_flow_rally \
-    --save_dir ./MD-FED/md_fed_outputs/stage3 \
+    --save_dir ./MD-FED/md_fed_outputs/stage3/stage3_0202 \
     --resume \
     --num_epochs 200 \
     --reduce_lr \

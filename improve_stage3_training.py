@@ -209,17 +209,61 @@ def main():
     )
     
     if existing_training:
+        print(f"\n{'='*60}")
         print(f"Found existing training in: {args.save_dir}")
-        if args.resume or args.resume_from_best or args.resume_from_epoch:
-            print("Will resume training...")
+        print(f"{'='*60}")
+        
+        # 读取训练历史
+        loss_file = os.path.join(args.save_dir, 'loss.json')
+        if os.path.exists(loss_file):
+            losses = load_json(loss_file)
+            if losses:
+                last_epoch = max(e['epoch'] for e in losses)
+                best_entry = max(losses, key=lambda x: x.get('val_edit', 0))
+                best_epoch = best_entry['epoch']
+                best_edit = best_entry.get('val_edit', 0)
+                
+                print(f"\n📊 Training History:")
+                print(f"   Last epoch: {last_epoch}")
+                print(f"   Best epoch: {best_epoch}")
+                print(f"   Best Edit score: {best_edit:.4f}")
+                print(f"   Total epochs trained: {len(losses)}")
+        
+        # 检查可用的检查点
+        checkpoint_files = [f for f in os.listdir(args.save_dir) if f.startswith('checkpoint_')]
+        if checkpoint_files:
+            epochs = sorted([int(f.replace('checkpoint_', '').replace('.pt', '')) for f in checkpoint_files])
+            print(f"\n📁 Available checkpoints:")
+            print(f"   Epochs: {epochs[0]} to {epochs[-1]} (total: {len(epochs)})")
+            if best_epoch in epochs:
+                checkpoint_path = os.path.join(args.save_dir, f'checkpoint_{best_epoch:03d}.pt')
+                print(f"   ✓ Best checkpoint exists: {checkpoint_path}")
+        
+        # 决定如何继续
+        if args.resume_from_epoch is not None:
+            print(f"\n🔄 Will resume from specified epoch: {args.resume_from_epoch}")
+        elif args.resume_from_best:
+            print(f"\n🔄 Will resume from BEST epoch: {best_epoch} (Edit score: {best_edit:.4f})")
+        elif args.resume:
+            print(f"\n🔄 Will resume from LAST epoch: {last_epoch}")
         else:
-            print("⚠️  Warning: Existing training found but --resume not specified!")
-            print("   Use --resume to continue training, or use a different --save_dir")
-            response = input("Continue anyway? (y/n): ")
-            if response.lower() != 'y':
+            print(f"\n⚠️  WARNING: Existing training found but no resume option specified!")
+            print(f"   Options:")
+            print(f"     --resume              : Continue from last epoch ({last_epoch})")
+            print(f"     --resume_from_best    : Continue from best epoch ({best_epoch}, Edit: {best_edit:.4f})")
+            print(f"     --resume_from_epoch N : Continue from specific epoch")
+            print(f"   Or use a different --save_dir to start fresh")
+            response = input("\nContinue from best epoch? (y/n): ")
+            if response.lower() == 'y':
+                args.resume_from_best = True
+                print(f"✓ Will resume from best epoch {best_epoch}")
+            else:
+                print("Exiting. Please specify --resume, --resume_from_best, or use different --save_dir")
                 return
     else:
-        print(f"Starting new training in: {args.save_dir}")
+        print(f"\n{'='*60}")
+        print(f"Starting NEW training in: {args.save_dir}")
+        print(f"{'='*60}")
     
     # 准备数据（如果不存在）
     from few_shot_learning_stage3 import prepare_few_shot_data, convert_manual_annotations_to_md_fed_format
@@ -348,49 +392,121 @@ def main():
         multi_gpu=False
     )
     
-    # 加载 Stage 2 或继续训练
+    # 加载模型 - 明确显示加载路径
+    print(f"\n{'='*60}")
+    print("Loading Model")
+    print(f"{'='*60}")
+    
     if existing_training and (args.resume or args.resume_from_best or args.resume_from_epoch):
         # 从已有训练继续
         if args.resume_from_epoch is not None:
             # 从指定 epoch 加载
             checkpoint_path = os.path.join(args.save_dir, f'checkpoint_{args.resume_from_epoch:03d}.pt')
-            if os.path.exists(checkpoint_path):
-                model.load(torch.load(checkpoint_path))
-                start_epoch = args.resume_from_epoch + 1
-                print(f"Loaded from epoch {args.resume_from_epoch}")
+            if not os.path.exists(checkpoint_path):
+                raise FileNotFoundError(f"❌ Checkpoint not found: {checkpoint_path}")
+            
+            print(f"📂 Loading checkpoint from:")
+            print(f"   Path: {os.path.abspath(checkpoint_path)}")
+            print(f"   Epoch: {args.resume_from_epoch}")
+            
+            checkpoint = torch.load(checkpoint_path, map_location=args.device)
+            model.load(checkpoint)
+            start_epoch = args.resume_from_epoch + 1
+            
+            # 加载训练历史
+            loss_file = os.path.join(args.save_dir, 'loss.json')
+            if os.path.exists(loss_file):
+                losses = load_json(loss_file)
+                best_entry = max(losses, key=lambda x: x.get('val_edit', 0))
+                best_epoch = best_entry['epoch']
+                best_edit_score = best_entry.get('val_edit', 0)
             else:
-                raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+                losses = []
+                best_epoch = None
+                best_edit_score = 0
+            
+            print(f"✓ Model loaded successfully")
+            print(f"   Will continue from epoch {start_epoch}")
+            
         else:
             # 从最佳或最后 epoch 加载
-            losses, best_epoch, best_edit_score = get_best_epoch_and_history(
+            losses, best_epoch_hist, best_edit_score_hist = get_best_epoch_and_history(
                 args.save_dir, 'edit'
             )
-            if args.resume_from_best and best_epoch is not None:
-                checkpoint_path = os.path.join(args.save_dir, f'checkpoint_{best_epoch:03d}.pt')
-                model.load(torch.load(checkpoint_path))
-                start_epoch = best_epoch + 1
-                print(f"Resuming from best epoch {best_epoch} (Edit score: {best_edit_score:.4f})")
+            
+            if args.resume_from_best and best_epoch_hist is not None:
+                checkpoint_path = os.path.join(args.save_dir, f'checkpoint_{best_epoch_hist:03d}.pt')
+                if not os.path.exists(checkpoint_path):
+                    raise FileNotFoundError(f"❌ Best checkpoint not found: {checkpoint_path}")
+                
+                print(f"📂 Loading BEST checkpoint from:")
+                print(f"   Path: {os.path.abspath(checkpoint_path)}")
+                print(f"   Epoch: {best_epoch_hist}")
+                print(f"   Edit score: {best_edit_score_hist:.4f}")
+                
+                checkpoint = torch.load(checkpoint_path, map_location=args.device)
+                model.load(checkpoint)
+                start_epoch = best_epoch_hist + 1
+                best_epoch = best_epoch_hist
+                best_edit_score = best_edit_score_hist
+                
+                print(f"✓ Model loaded successfully")
+                print(f"   Will continue from epoch {start_epoch}")
+                
             else:
                 last_epoch = get_last_epoch(args.save_dir)
                 checkpoint_path = os.path.join(args.save_dir, f'checkpoint_{last_epoch:03d}.pt')
-                model.load(torch.load(checkpoint_path))
+                if not os.path.exists(checkpoint_path):
+                    raise FileNotFoundError(f"❌ Last checkpoint not found: {checkpoint_path}")
+                
+                print(f"📂 Loading LAST checkpoint from:")
+                print(f"   Path: {os.path.abspath(checkpoint_path)}")
+                print(f"   Epoch: {last_epoch}")
+                
+                checkpoint = torch.load(checkpoint_path, map_location=args.device)
+                model.load(checkpoint)
                 start_epoch = last_epoch + 1
-                print(f"Resuming from last epoch {last_epoch}")
+                
+                # 加载训练历史
+                loss_file = os.path.join(args.save_dir, 'loss.json')
+                if os.path.exists(loss_file):
+                    losses = load_json(loss_file)
+                    best_entry = max(losses, key=lambda x: x.get('val_edit', 0))
+                    best_epoch = best_entry['epoch']
+                    best_edit_score = best_entry.get('val_edit', 0)
+                else:
+                    losses = []
+                    best_epoch = None
+                    best_edit_score = 0
+                
+                print(f"✓ Model loaded successfully")
+                print(f"   Will continue from epoch {start_epoch}")
     else:
         # 从 Stage 2 开始
-        losses, best_epoch, best_edit_score = get_best_epoch_and_history(
+        print(f"📂 Loading Stage 2 checkpoint from:")
+        print(f"   Directory: {os.path.abspath(args.stage2_checkpoint_dir)}")
+        
+        losses_stage2, best_epoch_stage2, best_edit_stage2 = get_best_epoch_and_history(
             args.stage2_checkpoint_dir, 'edit'
         )
-        print(f'Loading from Stage 2 epoch {best_epoch}')
-        stage2_checkpoint = torch.load(
-            os.path.join(args.stage2_checkpoint_dir, f'checkpoint_{best_epoch:03d}.pt'),
-            map_location=args.device
-        )
+        
+        stage2_checkpoint_path = os.path.join(args.stage2_checkpoint_dir, f'checkpoint_{best_epoch_stage2:03d}.pt')
+        print(f"   Path: {os.path.abspath(stage2_checkpoint_path)}")
+        print(f"   Epoch: {best_epoch_stage2}")
+        print(f"   Edit score: {best_edit_stage2:.4f}")
+        
+        if not os.path.exists(stage2_checkpoint_path):
+            raise FileNotFoundError(f"❌ Stage 2 checkpoint not found: {stage2_checkpoint_path}")
+        
+        stage2_checkpoint = torch.load(stage2_checkpoint_path, map_location=args.device)
         model.load(stage2_checkpoint)
         start_epoch = 0
         losses = []
         best_epoch = None
         best_edit_score = 0
+        
+        print(f"✓ Stage 2 model loaded successfully")
+        print(f"   Starting NEW training from epoch 0")
     
     # 设置优化器
     optimizer, scaler = model.get_optimizer({'lr': args.learning_rate})
@@ -433,22 +549,32 @@ def main():
         
         optim_path = os.path.join(args.save_dir, f'optim_{epoch_to_load:03d}.pt')
         if os.path.exists(optim_path):
+            print(f"\n📂 Loading optimizer state from:")
+            print(f"   Path: {os.path.abspath(optim_path)}")
             opt_data = torch.load(optim_path)
             optimizer.load_state_dict(opt_data['optimizer_state_dict'])
             scaler.load_state_dict(opt_data['scaler_state_dict'])
             lr_scheduler.load_state_dict(opt_data['lr_state_dict'])
-            print("✓ Optimizer state loaded")
+            print("✓ Optimizer state loaded successfully")
+        else:
+            print(f"⚠️  Optimizer state not found at: {optim_path}")
+            print("   Will start with new optimizer state")
     
     # 训练循环
     print(f"\n{'='*60}")
-    print("Starting Training")
-    print(f"{'='*60}\n")
+    print("Training Configuration")
+    print(f"{'='*60}")
     print(f"  Start epoch: {start_epoch}")
+    print(f"  Additional epochs: {args.num_epochs}")
     print(f"  Total epochs: {start_epoch + args.num_epochs}")
     print(f"  Batch size: {args.batch_size}")
     print(f"  Learning rate: {args.learning_rate}")
     print(f"  Eval frequency: every {args.eval_frequency} epochs")
-    print(f"  Early stop patience: {args.early_stop_patience} epochs\n")
+    print(f"  Early stop patience: {args.early_stop_patience} epochs")
+    if best_epoch is not None:
+        print(f"  Previous best: epoch {best_epoch} (Edit score: {best_edit_score:.4f})")
+    print(f"  Save directory: {os.path.abspath(args.save_dir)}")
+    print(f"{'='*60}\n")
     
     os.makedirs(args.save_dir, exist_ok=True)
     
@@ -505,8 +631,35 @@ def main():
     
     print(f'\n{"="*60}')
     print(f'Training Complete!')
-    print(f'Best epoch: {best_epoch} (Edit score: {best_edit_score:.4f})')
-    print(f'Checkpoints saved to: {args.save_dir}')
+    print(f"{'="*60}")
+    print(f'\n📊 Final Results:')
+    print(f'   Best epoch: {best_epoch}')
+    print(f'   Best Edit score: {best_edit_score:.4f}')
+    
+    if best_epoch is not None:
+        best_checkpoint_path = os.path.join(args.save_dir, f'checkpoint_{best_epoch:03d}.pt')
+        print(f'\n📂 Best Model Checkpoint:')
+        print(f'   Path: {os.path.abspath(best_checkpoint_path)}')
+        print(f'   Epoch: {best_epoch}')
+        print(f'   Edit score: {best_edit_score:.4f}')
+        
+        # 验证文件存在
+        if os.path.exists(best_checkpoint_path):
+            file_size = os.path.getsize(best_checkpoint_path) / (1024 * 1024)  # MB
+            print(f'   Size: {file_size:.2f} MB')
+            print(f'   ✓ Checkpoint file exists')
+        else:
+            print(f'   ⚠️  WARNING: Checkpoint file not found!')
+    
+    print(f'\n📁 All checkpoints saved to:')
+    print(f'   {os.path.abspath(args.save_dir)}')
+    print(f'\n💡 To use this model for testing:')
+    print(f'   python test_stage2_on_manual_data.py \\')
+    print(f'       --checkpoint_dir {args.save_dir} \\')
+    print(f'       --epoch {best_epoch} \\')
+    print(f'       --manual_annotations manual_annotations.json \\')
+    print(f'       --frame_dir /path/to/frames \\')
+    print(f'       --flow_dir /path/to/flow')
     print(f"{'='*60}\n")
 
 
