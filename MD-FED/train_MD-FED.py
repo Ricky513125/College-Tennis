@@ -422,7 +422,7 @@ class MD_FED(BaseRGBModel):
                                     if fine_labels_at_event:
                                         print(f'  Fine labels at frame {first_event_pos}: {fine_labels_at_event[:5]}')
                             else:
-                                print(f'  ⚠️  No events in ground truth for this sample')
+                                print(f' ⚠️ No events in ground truth for this sample')
                             
                             print(f'\n[Sample {sample_idx} - Model Predictions]')
                             pred_event_count = np.sum(sample_coarse_pred_class)
