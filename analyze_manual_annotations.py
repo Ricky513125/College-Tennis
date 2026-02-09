@@ -140,113 +140,115 @@ def main():
     with open('manual_annotations.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     
-    print(f"{'='*80}")
-    print(f"Manual Annotations Statistics")
-    print(f"{'='*80}\n")
+    # 打开输出文件
+    output_file = 'manual_annotations_statistics.txt'
+    with open(output_file, 'w', encoding='utf-8') as out:
+        out.write(f"{'='*80}\n")
+        out.write(f"Manual Annotations Statistics\n")
+        out.write(f"{'='*80}\n\n")
+        
+        # 统计视频数量和片段信息
+        out.write(f"Total videos: {len(data)}\n")
+        
+        # 统计每个视频的长度
+        total_frames = 0
+        total_events = 0
+        video_lengths = []
+        
+        for item in data:
+            num_frames = item.get('num_frames', 0)
+            num_events = len(item.get('events', []))
+            video_lengths.append(num_frames)
+            total_frames += num_frames
+            total_events += num_events
+        
+        out.write(f"Total events: {total_events}\n")
+        out.write(f"Total frames: {total_frames:,}\n")
+        out.write(f"Average video length: {total_frames / len(data):.1f} frames\n")
+        out.write(f"Min video length: {min(video_lengths)} frames\n")
+        out.write(f"Max video length: {max(video_lengths)} frames\n")
+        out.write(f"Average events per video: {total_events / len(data):.2f}\n\n")
     
-    # 统计视频数量和片段信息
-    print(f"Total videos: {len(data)}")
-    
-    # 统计每个视频的长度
-    total_frames = 0
-    total_events = 0
-    video_lengths = []
-    
-    for item in data:
-        num_frames = item.get('num_frames', 0)
-        num_events = len(item.get('events', []))
-        video_lengths.append(num_frames)
-        total_frames += num_frames
-        total_events += num_events
-    
-    print(f"Total events: {total_events}")
-    print(f"Total frames: {total_frames:,}")
-    print(f"Average video length: {total_frames / len(data):.1f} frames")
-    print(f"Min video length: {min(video_lengths)} frames")
-    print(f"Max video length: {max(video_lengths)} frames")
-    print(f"Average events per video: {total_events / len(data):.2f}\n")
-    
-    # 统计各子类别
-    sc_counts = {
-        'sc1': defaultdict(int),
-        'sc2': defaultdict(int),
-        'sc3': defaultdict(int),
-        'sc4': defaultdict(int),
-        'sc5': defaultdict(int),
-        'sc6': defaultdict(int),
-        'sc7': defaultdict(int),
-        'sc8': defaultdict(int),
-    }
-    
-    # 遍历所有事件
-    for item in data:
-        for event in item.get('events', []):
-            label = event.get('label', '')
-            info = parse_label(label)
+        # 统计各子类别
+        sc_counts = {
+            'sc1': defaultdict(int),
+            'sc2': defaultdict(int),
+            'sc3': defaultdict(int),
+            'sc4': defaultdict(int),
+            'sc5': defaultdict(int),
+            'sc6': defaultdict(int),
+            'sc7': defaultdict(int),
+            'sc8': defaultdict(int),
+        }
+        
+        # 遍历所有事件
+        for item in data:
+            for event in item.get('events', []):
+                label = event.get('label', '')
+                info = parse_label(label)
+                
+                # 统计每个子类别
+                for sc_key, sc_value in info.items():
+                    if sc_value:
+                        sc_counts[sc_key][sc_value] += 1
+        
+        # 写入统计结果
+        out.write(f"{'='*80}\n")
+        out.write(f"Sub-Class Element Statistics\n")
+        out.write(f"{'='*80}\n\n")
+        
+        sc_names = {
+            'sc1': 'SC1: Player Position (near/far)',
+            'sc2': 'SC2: Court Position (deuce/ad/middle)',
+            'sc3': 'SC3: Hand (forehand/backhand)',
+            'sc4': 'SC4: Action Type (serve/return/stroke)',
+            'sc5': 'SC5: Direction',
+            'sc6': 'SC6: Technique',
+            'sc7': 'SC7: Approach',
+            'sc8': 'SC8: Result',
+        }
+        
+        # 定义显示顺序
+        display_order = {
+            'sc1': ['near', 'far'],
+            'sc2': ['deuce', 'ad', 'middle'],
+            'sc3': ['forehand', 'backhand'],
+            'sc4': ['serve', 'return', 'stroke'],
+            'sc5': ['T', 'Wide', 'cross-court', 'down the line', 'down the middle', 
+                    'inside-in', 'inside-out'],
+            'sc6': ['ground stroke', 'slice', 'volley', 'lob', 'drop', 'smash'],
+            'sc7': ['approach', 'non-approach'],
+            'sc8': ['in-bound', 'winner', 'forced error', 'unforced error'],
+        }
+        
+        for sc_key in ['sc1', 'sc2', 'sc3', 'sc4', 'sc5', 'sc6', 'sc7', 'sc8']:
+            out.write(f"\n{sc_names[sc_key]}\n")
+            out.write(f"{'-'*80}\n")
+            out.write(f"{'Element':<25} {'Count':>10} {'Proportion':>15}\n")
+            out.write(f"{'-'*80}\n")
             
-            # 统计每个子类别
-            for sc_key, sc_value in info.items():
-                if sc_value:
-                    sc_counts[sc_key][sc_value] += 1
-    
-    # 打印统计结果
-    print(f"{'='*80}")
-    print(f"Sub-Class Element Statistics")
-    print(f"{'='*80}\n")
-    
-    sc_names = {
-        'sc1': 'SC1: Player Position (near/far)',
-        'sc2': 'SC2: Court Position (deuce/ad/middle)',
-        'sc3': 'SC3: Hand (forehand/backhand)',
-        'sc4': 'SC4: Action Type (serve/return/stroke)',
-        'sc5': 'SC5: Direction',
-        'sc6': 'SC6: Technique',
-        'sc7': 'SC7: Approach',
-        'sc8': 'SC8: Result',
-    }
-    
-    # 定义显示顺序
-    display_order = {
-        'sc1': ['near', 'far'],
-        'sc2': ['deuce', 'ad', 'middle'],
-        'sc3': ['forehand', 'backhand'],
-        'sc4': ['serve', 'return', 'stroke'],
-        'sc5': ['T', 'Wide', 'cross-court', 'down the line', 'down the middle', 
-                'inside-in', 'inside-out'],
-        'sc6': ['ground stroke', 'slice', 'volley', 'lob', 'drop', 'smash'],
-        'sc7': ['approach', 'non-approach'],
-        'sc8': ['in-bound', 'winner', 'forced error', 'unforced error'],
-    }
-    
-    for sc_key in ['sc1', 'sc2', 'sc3', 'sc4', 'sc5', 'sc6', 'sc7', 'sc8']:
-        print(f"\n{sc_names[sc_key]}")
-        print(f"{'-'*80}")
-        print(f"{'Element':<25} {'Count':>10} {'Proportion':>15}")
-        print(f"{'-'*80}")
-        
-        total = sum(sc_counts[sc_key].values())
-        
-        # 按照定义的顺序显示
-        for element in display_order.get(sc_key, []):
-            count = sc_counts[sc_key].get(element, 0)
-            if total > 0:
-                proportion = count / total * 100
-                print(f"{element:<25} {count:>10,} {proportion:>14.1f}%")
-        
-        # 显示其他未定义的元素
-        for element, count in sorted(sc_counts[sc_key].items()):
-            if element not in display_order.get(sc_key, []):
+            total = sum(sc_counts[sc_key].values())
+            
+            # 按照定义的顺序显示
+            for element in display_order.get(sc_key, []):
+                count = sc_counts[sc_key].get(element, 0)
                 if total > 0:
                     proportion = count / total * 100
-                    print(f"{element:<25} {count:>10,} {proportion:>14.1f}%")
-        
-        print(f"{'-'*80}")
-        print(f"{'Total':<25} {total:>10,} {100.0:>14.1f}%")
+                    out.write(f"{element:<25} {count:>10,} {proportion:>14.1f}%\n")
+            
+            # 显示其他未定义的元素
+            for element, count in sorted(sc_counts[sc_key].items()):
+                if element not in display_order.get(sc_key, []):
+                    if total > 0:
+                        proportion = count / total * 100
+                        out.write(f"{element:<25} {count:>10,} {proportion:>14.1f}%\n")
+            
+            out.write(f"{'-'*80}\n")
+            out.write(f"{'Total':<25} {total:>10,} {100.0:>14.1f}%\n")
     
-    # 保存详细的视频信息到文件
-    print(f"\n{'='*80}")
-    print(f"Saving detailed video information...")
-    print(f"{'='*80}\n")
+    # 保存详细的视频信息到另一个文件
+    print(f"Statistics saved to: {output_file}")
+    print(f"Generating detailed video information...")
     
     with open('manual_annotations_summary.txt', 'w', encoding='utf-8') as f:
         f.write(f"{'='*80}\n")
@@ -272,7 +274,8 @@ def main():
             
             f.write("\n")
     
-    print(f"Detailed information saved to: manual_annotations_summary.txt")
+    print(f"Detailed video information saved to: manual_annotations_summary.txt")
+    print(f"All done!")
 
 
 if __name__ == '__main__':
