@@ -70,7 +70,42 @@ class VTN(nn.Module):
                     elif 'model' in state_dict:
                         state_dict = state_dict['model']
                     
-                    # strict=False 允许位置编码尺寸不匹配（会自动插值）
+                    # 处理位置编码的尺寸不匹配问题
+                    if 'pos_embed' in state_dict:
+                        pos_embed_checkpoint = state_dict['pos_embed']
+                        embedding_size = pos_embed_checkpoint.shape[-1]  # 384
+                        num_patches = self.spatial_transformer.patch_embed.num_patches
+                        num_extra_tokens = self.spatial_transformer.pos_embed.shape[-2] - num_patches  # usually 1 (class token)
+                        
+                        # 计算原始的 grid size (从预训练权重)
+                        orig_size = int((pos_embed_checkpoint.shape[-2] - num_extra_tokens) ** 0.5)
+                        # 计算新的 grid size (当前模型)
+                        if isinstance(model_img_size, tuple):
+                            new_size = (model_img_size[0] // patch_size, model_img_size[1] // patch_size)
+                        else:
+                            new_size = model_img_size // patch_size
+                            new_size = (new_size, new_size)
+                        
+                        # 如果尺寸不匹配，需要插值
+                        if (orig_size, orig_size) != new_size:
+                            print(f"Position embedding 需要插值: {orig_size}×{orig_size} -> {new_size[0]}×{new_size[1]}")
+                            # 分离 class token 和 position embeddings
+                            extra_tokens = pos_embed_checkpoint[:, :num_extra_tokens]  # class token
+                            pos_tokens = pos_embed_checkpoint[:, num_extra_tokens:]    # position embeddings
+                            
+                            # Reshape to grid
+                            pos_tokens = pos_tokens.reshape(-1, orig_size, orig_size, embedding_size).permute(0, 3, 1, 2)
+                            # Interpolate
+                            pos_tokens = torch.nn.functional.interpolate(
+                                pos_tokens, size=new_size, mode='bicubic', align_corners=False)
+                            # Reshape back
+                            pos_tokens = pos_tokens.permute(0, 2, 3, 1).flatten(1, 2)
+                            # Concatenate class token and position embeddings
+                            new_pos_embed = torch.cat((extra_tokens, pos_tokens), dim=1)
+                            state_dict['pos_embed'] = new_pos_embed
+                            print(f"✅ Position embedding 插值完成")
+                    
+                    # 加载权重（现在应该不会有尺寸不匹配）
                     missing_keys, unexpected_keys = self.spatial_transformer.load_state_dict(state_dict, strict=False)
                     if missing_keys:
                         print(f"⚠️  Missing keys: {missing_keys}")
