@@ -47,11 +47,16 @@ class VTN(nn.Module):
             import os
             if os.path.exists(pretrained_path):
                 print(f"📂 从本地路径加载预训练权重: {pretrained_path}")
+                # 使用标准的 224 模型名称（不带尺寸后缀），因为预训练权重是基于 224 训练的
+                # img_size 参数会自动调整位置编码以适应不同的输入尺寸
+                model_name = f'vit_{spatial_size}_patch{patch_size}_224'
+                print(f"Creating model: {model_name} with img_size={model_img_size}")
+                
                 # 先创建不带预训练的模型
                 self.spatial_transformer = timm.create_model(
-                    f'vit_{spatial_size}_patch{patch_size}_{img_size}{spatial_suffix}', 
+                    model_name, 
                     pretrained=False,
-                    img_size=model_img_size,
+                    img_size=model_img_size,  # 实际输入尺寸（可以与预训练时的 224 不同）
                     in_chans=3, 
                     attn_drop_rate=0.0, 
                     drop_rate=0.0
@@ -65,7 +70,12 @@ class VTN(nn.Module):
                     elif 'model' in state_dict:
                         state_dict = state_dict['model']
                     
-                    self.spatial_transformer.load_state_dict(state_dict, strict=False)
+                    # strict=False 允许位置编码尺寸不匹配（会自动插值）
+                    missing_keys, unexpected_keys = self.spatial_transformer.load_state_dict(state_dict, strict=False)
+                    if missing_keys:
+                        print(f"⚠️  Missing keys: {missing_keys}")
+                    if unexpected_keys:
+                        print(f"⚠️  Unexpected keys: {unexpected_keys}")
                     print(f"✅ 成功从本地加载 ViT-{spatial_size} 预训练权重")
                 except Exception as e:
                     print(f"⚠️  加载本地权重时出错: {e}")
@@ -73,8 +83,9 @@ class VTN(nn.Module):
             else:
                 print(f"⚠️  本地权重文件不存在: {pretrained_path}")
                 print(f"⚠️  将使用随机初始化")
+                model_name = f'vit_{spatial_size}_patch{patch_size}_224'
                 self.spatial_transformer = timm.create_model(
-                    f'vit_{spatial_size}_patch{patch_size}_{img_size}{spatial_suffix}', 
+                    model_name, 
                     pretrained=False,
                     img_size=model_img_size,
                     in_chans=3, 
@@ -83,9 +94,11 @@ class VTN(nn.Module):
                 )
         else:
             # 尝试从网络下载
+            # 使用标准的 224 模型名称，img_size 参数会自动调整位置编码
+            model_name = f'vit_{spatial_size}_patch{patch_size}_224'
             try:
                 self.spatial_transformer = timm.create_model(
-                    f'vit_{spatial_size}_patch{patch_size}_{img_size}{spatial_suffix}', 
+                    model_name, 
                     pretrained=pretrained,  # 使用传入的 pretrained 参数
                     img_size=model_img_size,  # 支持矩形
                     in_chans=3, 
@@ -100,7 +113,7 @@ class VTN(nn.Module):
                 print(f"❌ 加载预训练权重失败: {e}")
                 print(f"⚠️  回退到随机初始化...")
                 self.spatial_transformer = timm.create_model(
-                    f'vit_{spatial_size}_patch{patch_size}_{img_size}{spatial_suffix}', 
+                    model_name, 
                     pretrained=False,  # 回退到不使用预训练
                     img_size=model_img_size,
                     in_chans=3, 
