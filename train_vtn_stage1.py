@@ -31,9 +31,9 @@ import numpy as np
 # Add MD-FED to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'MD-FED'))
 
-from MD_FED.model.vtn import VTN
-from MD_FED.util.dataset import ActionSeqDataset, load_classes
-from MD_FED.util.io import store_json, store_config
+from model.vtn import VTN
+from util.dataset import ActionSeqDataset, load_classes
+from util.io import store_json, store_config
 
 
 class VTNModel(nn.Module):
