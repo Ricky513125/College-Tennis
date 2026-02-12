@@ -34,7 +34,8 @@ class VTN_MD_FED(nn.Module):
     支持矩形输入 (如 384×224)
     """
     def __init__(self, num_classes, clip_len, img_size=112, img_height=None, img_width=None,
-                 patch_size=16, spatial_size='base', temporal_type='longformer', temporal_arch='gru'):
+                 patch_size=16, spatial_size='base', temporal_type='longformer', temporal_arch='gru',
+                 pretrained=True):
         super().__init__()
         
         self._num_classes = num_classes
@@ -66,7 +67,8 @@ class VTN_MD_FED(nn.Module):
             patch_size=patch_size,
             spatial_frozen=False,  # 不冻结spatial backbone
             spatial_size=spatial_size,  # 'tiny', 'small', 'base'
-            temporal_type=temporal_type  # 'longformer', 'linformer', 'transformer'
+            temporal_type=temporal_type,  # 'longformer', 'linformer', 'transformer'
+            pretrained=pretrained  # 是否使用预训练权重
         )
         
         # Feature dimension from ViT
@@ -217,6 +219,12 @@ def train_vtn(args):
     print("\nStep 2: Creating VTN model...")
     
     # 使用矩形或正方形输入
+    use_pretrained = not args.no_pretrained
+    if use_pretrained:
+        print("✅ 将使用 ImageNet 预训练权重")
+    else:
+        print("⚠️  将从随机初始化开始训练（不使用预训练）")
+    
     if args.img_height is not None and args.img_width is not None:
         # 矩形输入
         print(f"Using rectangular input: {args.img_width}×{args.img_height}")
@@ -229,7 +237,8 @@ def train_vtn(args):
             patch_size=args.patch_size,
             spatial_size=args.vtn_spatial_size,
             temporal_type=args.vtn_temporal_type,
-            temporal_arch=args.temporal_arch
+            temporal_arch=args.temporal_arch,
+            pretrained=use_pretrained
         ).cuda()
         img_size_str = f"{args.img_width}×{args.img_height}"
     else:
@@ -242,7 +251,8 @@ def train_vtn(args):
             patch_size=args.patch_size,
             spatial_size=args.vtn_spatial_size,
             temporal_type=args.vtn_temporal_type,
-            temporal_arch=args.temporal_arch
+            temporal_arch=args.temporal_arch,
+            pretrained=use_pretrained
         ).cuda()
         img_size_str = f"{args.crop_dim}×{args.crop_dim}"
     
@@ -439,6 +449,11 @@ def main():
         default='gru',
         choices=['gru', 'deeper_gru'],
         help='Temporal modeling architecture'
+    )
+    parser.add_argument(
+        '--no_pretrained',
+        action='store_true',
+        help='不使用预训练权重（如果下载失败，使用此选项从头训练）'
     )
     parser.add_argument(
         '--clip_len',
