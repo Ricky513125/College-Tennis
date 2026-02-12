@@ -88,8 +88,17 @@ class VTNModel(nn.Module):
             coarse_pred: [batch_size, clip_len, 2]
             fine_pred: [batch_size, clip_len, num_classes]
         """
-        # VTN feature extraction
-        features = self.vtn(frames)  # [batch_size, clip_len, vtn_dim]
+        batch_size = frames.size(0)
+        clip_len = frames.size(1)
+        
+        # Reshape to [batch_size*clip_len, 3, H, W] for VTN
+        frames_flat = frames.view(batch_size * clip_len, *frames.shape[2:])
+        
+        # VTN feature extraction (returns [batch_size*clip_len, vtn_dim])
+        features = self.vtn(frames_flat)
+        
+        # Reshape back to [batch_size, clip_len, vtn_dim]
+        features = features.view(batch_size, clip_len, -1)
         
         # Temporal modeling
         temporal_features, _ = self.temporal_head(features)  # [batch_size, clip_len, 276]
@@ -121,7 +130,7 @@ def train_epoch(model, train_loader, optimizer, scaler, device, fg_weight=5):
         
         optimizer.zero_grad()
         
-        with torch.cuda.amp.autocast():
+        with torch.amp.autocast('cuda'):
             coarse_pred, fine_pred = model(frames)
             
             # Coarse-grained loss (event detection)
@@ -201,7 +210,7 @@ def validate_epoch(model, val_loader, device, fg_weight=5):
             fine_label = batch['fine_label'].to(device)
             coarse_mask = batch['coarse_mask'].to(device)
             
-            with torch.cuda.amp.autocast():
+            with torch.amp.autocast('cuda'):
                 coarse_pred, fine_pred = model(frames)
                 
                 # Coarse-grained loss
