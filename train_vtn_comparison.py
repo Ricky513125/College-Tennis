@@ -26,6 +26,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ChainedScheduler, LinearLR, CosineAnnealingLR
 import random
 import numpy as np
+from tqdm import tqdm
 
 
 class VTN_MD_FED(nn.Module):
@@ -334,7 +335,8 @@ def train_vtn(args):
         # Train
         model.train()
         train_loss = 0
-        for batch in train_loader:
+        train_pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{args.num_epochs} [Train]', leave=False)
+        for batch in train_pbar:
             frames = batch['frame'].cuda()
             coarse_label = batch['coarse_label'].cuda()
             fine_label = batch['fine_label'].cuda()
@@ -353,14 +355,17 @@ def train_vtn(args):
             lr_scheduler.step()
             
             train_loss += loss.item()
+            # Update progress bar with current batch loss
+            train_pbar.set_postfix({'loss': f'{loss.item():.4f}'})
         
         train_loss /= len(train_loader)
         
         # Validate
         model.eval()
         val_loss = 0
+        val_pbar = tqdm(val_loader, desc=f'Epoch {epoch+1}/{args.num_epochs} [Val]', leave=False)
         with torch.no_grad():
-            for batch in val_loader:
+            for batch in val_pbar:
                 frames = batch['frame'].cuda()
                 coarse_label = batch['coarse_label'].cuda()
                 fine_label = batch['fine_label'].cuda()
@@ -371,15 +376,25 @@ def train_vtn(args):
                 )
                 
                 val_loss += loss.item()
+                # Update progress bar with current batch loss
+                val_pbar.set_postfix({'loss': f'{loss.item():.4f}'})
         
         val_loss /= len(val_loader)
         
-        print(f'[Epoch {epoch}] Train loss: {train_loss:.5f} Val loss: {val_loss:.5f}')
+        # Get current learning rate
+        current_lr = optimizer.param_groups[0]['lr']
+        
+        print(f'[Epoch {epoch+1}/{args.num_epochs}] Train: {train_loss:.5f} | Val: {val_loss:.5f} | LR: {current_lr:.2e}')
         
         # Save checkpoint
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            print(f'  → New best! Saving checkpoint...')
+            print(f'  ✅ New best val loss: {val_loss:.5f} → Saving checkpoint...')
+            # Save best model separately
+            torch.save(
+                model.state_dict(),
+                os.path.join(args.save_dir, 'best_model.pt')
+            )
         
         losses.append({
             'epoch': epoch,
