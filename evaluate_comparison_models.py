@@ -67,7 +67,8 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
             clip_len=clip_len,
             img_size=crop_dim,
             spatial_size=vtn_spatial_size,
-            temporal_type=vtn_temporal_type
+            temporal_type=vtn_temporal_type,
+            pretrained=False  # 不需要预训练权重，直接加载 checkpoint
         )
     elif model_type == 'i3d':
         model = I3D_Model(
