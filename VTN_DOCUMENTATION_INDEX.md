@@ -4,21 +4,34 @@
 
 ## 🚀 快速开始
 
+### ⚠️ 最新更新：完整训练流程
+
+0. **[README_VTN_Complete_Training.md](README_VTN_Complete_Training.md)** ⭐⭐⭐⭐⭐
+   - **公平对比必读！**
+   - 完整的 Stage 1 → Stage 3 训练流程
+   - 模仿 MD-FED 的三阶段训练
+   - 推荐用于正式对比实验
+
 ### 新手必读
 
-1. **[QUICKSTART_VTN.md](QUICKSTART_VTN.md)** ⭐⭐⭐⭐⭐
-   - **最重要！先读这个！**
-   - 3 步完成 VTN 训练和对比
-   - 包含所有常见问题解答
+1. **[VTN_STAGE1_QUICKSTART.md](VTN_STAGE1_QUICKSTART.md)** ⭐⭐⭐⭐⭐
+   - **Stage 1 快速开始指南**
+   - F3Set 数据预训练
+   - 提供更好的初始化
+
+2. **[QUICKSTART_VTN.md](QUICKSTART_VTN.md)** ⭐⭐⭐⭐
+   - **Stage 3 快速测试**
+   - 跳过 Stage 1 的快速验证
+   - 适合快速原型
 
 ### 核心概念
 
-2. **[README_VTN_Training_Strategy.md](README_VTN_Training_Strategy.md)** ⭐⭐⭐⭐⭐
+3. **[README_VTN_Training_Strategy.md](README_VTN_Training_Strategy.md)** ⭐⭐⭐⭐⭐
    - VTN 应该如何训练？
    - 为什么与 MD-FED Stage 3 的对比是公平的？
    - 详细的训练策略说明
 
-3. **[README_Fair_Comparison.md](README_Fair_Comparison.md)** ⭐⭐⭐⭐
+4. **[README_Fair_Comparison.md](README_Fair_Comparison.md)** ⭐⭐⭐⭐
    - 数据增强策略一致性
    - 训练时随机裁剪，评估时中心裁剪
    - 确保公平对比的关键配置
@@ -53,22 +66,33 @@
 
 ### 训练和评估
 
-8. **`train_vtn_comparison.py`** ⭐⭐⭐⭐⭐
+8. **`train_vtn_stage1.py`** ⭐⭐⭐⭐⭐ NEW!
    ```bash
-   # VTN 训练主脚本
+   # VTN Stage 1: F3Set 预训练
+   python train_vtn_stage1.py \
+       --frame_dir /path/to/f3set_frames \
+       --save_dir ./vtn_outputs/stage1_small \
+       --crop_dim 224 \
+       --vtn_spatial_size small
+   ```
+
+9. **`train_vtn_comparison.py`** ⭐⭐⭐⭐⭐
+   ```bash
+   # VTN Stage 3: Few-shot 微调
    python train_vtn_comparison.py \
        --manual_annotations manual_annotations.json \
        --frame_dir /path/to/frames \
+       --stage1_checkpoint ./vtn_outputs/stage1_small/best_model.pt \
        --crop_dim 224
    ```
 
-9. **`compare_results.py`** ⭐⭐⭐⭐⭐
-   ```bash
-   # 对比 VTN 和 MD-FED 结果
-   python compare_results.py \
-       --vtn_results vtn_outputs/comparison/best_model_metrics.json \
-       --mdfed_results MD-FED/md_fed_outputs/stage3/evaluation_results.json
-   ```
+10. **`compare_results.py`** ⭐⭐⭐⭐⭐
+    ```bash
+    # 对比 VTN 和 MD-FED 结果
+    python compare_results.py \
+        --vtn_results vtn_outputs/comparison/best_model_metrics.json \
+        --mdfed_results MD-FED/md_fed_outputs/stage3/evaluation_results.json
+    ```
 
 ### 验证工具
 
@@ -98,7 +122,21 @@
 
 ## 📖 阅读顺序
 
-### 第一次使用 VTN
+### 正式对比实验 (推荐)
+
+```
+1. README_VTN_Complete_Training.md (理解完整流程)
+   ↓
+2. VTN_STAGE1_QUICKSTART.md (Stage 1 预训练)
+   ↓
+3. 运行 train_vtn_stage1.py (F3Set 预训练, 8-12h)
+   ↓
+4. 运行 train_vtn_comparison.py (Stage 3 微调, 2-4h)
+   ↓
+5. 运行 compare_results.py (对比结果)
+```
+
+### 快速测试 (跳过 Stage 1)
 
 ```
 1. QUICKSTART_VTN.md (必读)
@@ -107,7 +145,7 @@
    ↓
 3. README_Fair_Comparison.md (确保公平对比)
    ↓
-4. 运行 train_vtn_comparison.py (开始训练)
+4. 运行 train_vtn_comparison.py (开始训练, 2-4h)
    ↓
 5. 运行 compare_results.py (对比结果)
 ```
@@ -212,35 +250,54 @@ VTN 文档
 
 ## 🎓 学习路径
 
-### 路径 1: 快速上手（30分钟）
-
-```
-1. 读 QUICKSTART_VTN.md (10分钟)
-2. 运行快速验证 (tiny 模型, 20分钟)
-3. 查看结果
-```
-
-### 路径 2: 完整对比（4小时）
+### 路径 1: 快速测试（4小时）⚡
 
 ```
 1. 读 QUICKSTART_VTN.md (10分钟)
 2. 读 README_VTN_Training_Strategy.md (15分钟)
-3. 运行标准训练 (small 模型, 3小时)
+3. 运行 train_vtn_comparison.py (跳过 Stage 1, 3小时)
 4. 对比结果 (5分钟)
+
+⚠️ 注意: 性能可能较差，不适合正式对比
 ```
 
-### 路径 3: 深入研究（1天）
+### 路径 2: 完整对比（12-16小时）⭐ 推荐
 
 ```
-1. 阅读所有文档 (2小时)
-2. 理解代码实现 (2小时)
-3. 多配置实验 (4小时)
-4. 结果分析和论文撰写 (2小时)
+1. 读 README_VTN_Complete_Training.md (20分钟)
+2. 读 VTN_STAGE1_QUICKSTART.md (15分钟)
+3. 运行 train_vtn_stage1.py (F3Set 预训练, 8-12小时)
+4. 运行 train_vtn_comparison.py (Stage 3 微调, 2-4小时)
+5. 对比结果 (5分钟)
+
+✅ 推荐: 这是公平对比的正确方法
+```
+
+### 路径 3: 深入研究（2天）🔬
+
+```
+Day 1:
+1. 阅读所有文档 (3小时)
+2. 理解代码实现 (3小时)
+3. Stage 1 预训练实验 (8-12小时)
+
+Day 2:
+4. Stage 3 微调实验 (4小时)
+5. 多配置对比 (4小时)
+6. 结果分析和论文撰写 (4小时)
 ```
 
 ## 📝 更新日志
 
-- **2026-02-12**: 创建完整的 VTN 文档体系
+- **2026-02-12 (v2)**: 添加 Stage 1 预训练支持 ⭐ NEW
+  - ✅ 新增 `train_vtn_stage1.py` - F3Set 预训练脚本
+  - ✅ 新增 `README_VTN_Complete_Training.md` - 完整训练流程
+  - ✅ 新增 `VTN_STAGE1_QUICKSTART.md` - Stage 1 快速开始
+  - ✅ 更新 `train_vtn_comparison.py` - 支持从 Stage 1 加载
+  - ✅ 更新 `QUICKSTART_VTN.md` - 区分完整流程和快速测试
+  - 📚 完全模仿 MD-FED 的三阶段训练流程
+
+- **2026-02-12 (v1)**: 创建完整的 VTN 文档体系
   - 添加训练策略说明
   - 添加公平对比配置
   - 添加快速开始指南

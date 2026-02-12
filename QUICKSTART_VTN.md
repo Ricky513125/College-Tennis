@@ -1,6 +1,19 @@
 # VTN 快速开始指南
 
-## 🎯 目标
+## ⚠️ 重要提示：公平对比需要 Stage 1 预训练
+
+**本文档提供的是快速测试方法（跳过 Stage 1）。为了与 MD-FED 进行完全公平的对比，请参考：**
+
+📚 **[README_VTN_Complete_Training.md](README_VTN_Complete_Training.md)** - 完整的 Stage 1 → Stage 3 训练流程
+
+| 训练方式 | 优点 | 缺点 | 适用场景 |
+|---------|------|------|---------|
+| **完整流程 (Stage 1 → 3)** | ✅ 公平对比<br>✅ 更好性能 | ⏱️ 需要 F3Set 数据<br>⏱️ 训练时间长 (Stage 1: 8-12h) | 正式对比实验 |
+| **快速测试 (仅 Stage 3)** | ⚡ 快速验证<br>⚡ 不需要额外数据 | ❌ 性能可能较差<br>❌ 不够公平 | 快速原型验证 |
+
+---
+
+## 🎯 目标 (快速测试)
 
 在你的 manual_annotations.json 数据上训练 VTN，并与 MD-FED Stage 3 进行对比。
 

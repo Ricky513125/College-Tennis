@@ -310,6 +310,30 @@ def train_vtn(args):
         pin_memory=True, num_workers=4
     )
     
+    # Load Stage 1 checkpoint if provided
+    if args.stage1_checkpoint:
+        print(f"\nLoading Stage 1 checkpoint: {args.stage1_checkpoint}")
+        checkpoint = torch.load(args.stage1_checkpoint, map_location='cuda')
+        
+        # Load model weights
+        if 'model_state_dict' in checkpoint:
+            model_state = checkpoint['model_state_dict']
+        else:
+            model_state = checkpoint
+        
+        # Load weights (allow partial loading for compatibility)
+        model_dict = model.state_dict()
+        pretrained_dict = {k: v for k, v in model_state.items() if k in model_dict and model_dict[k].shape == v.shape}
+        
+        if len(pretrained_dict) < len(model_state):
+            print(f"⚠️  Warning: Only loaded {len(pretrained_dict)}/{len(model_state)} parameters from Stage 1 checkpoint")
+            print(f"   This is expected if the model architecture differs (e.g., different num_classes)")
+        
+        model_dict.update(pretrained_dict)
+        model.load_state_dict(model_dict)
+        print(f"✓ Successfully loaded Stage 1 checkpoint")
+        print(f"  Loaded parameters: {len(pretrained_dict)}/{len(model_state)}")
+    
     # Setup training
     print("\nStep 4: Setup training...")
     optimizer, scaler = model.get_optimizer({'lr': args.learning_rate})
@@ -533,6 +557,12 @@ def main():
         type=float,
         default=0.8,
         help='Train/val split ratio'
+    )
+    parser.add_argument(
+        '--stage1_checkpoint',
+        type=str,
+        default=None,
+        help='Path to Stage 1 checkpoint for initialization (recommended for fair comparison with MD-FED)'
     )
     
     args = parser.parse_args()
