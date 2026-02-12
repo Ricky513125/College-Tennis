@@ -32,8 +32,9 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'MD-FED'))
 
 from model.vtn import VTN
-from util.dataset import ActionSeqDataset, load_classes
-from util.io import store_json, store_config
+from dataset.input_process import ActionSeqDataset
+from util.dataset import load_classes
+from util.io import store_json
 
 
 class VTNModel(nn.Module):
@@ -49,22 +50,10 @@ class VTNModel(nn.Module):
         
         # VTN backbone
         self.vtn = VTN(
-            image_size=crop_dim,
-            patch_size=16,
-            num_classes=1000,  # Not used, we'll use our own heads
             frames=clip_len,
-            dim=512,
-            spatial_depth=12,
-            temporal_depth=12,
-            heads=8,
-            mlp_dim=2048,
-            pool='cls',
-            channels=3,
-            dim_head=64,
-            dropout=0.1,
-            emb_dropout=0.1,
-            scale_dim=4,
-            depth=4,
+            num_classes=1000,  # Not used, we'll use our own heads
+            img_size=crop_dim,
+            patch_size=16,
             spatial_size=vtn_spatial_size,
             temporal_type=vtn_temporal_type,
             pretrained=pretrained,
