@@ -141,9 +141,8 @@ class VTN(nn.Module):
                     drop_rate=0.0
                 )
                 if pretrained:
-                    print(f"✅ 成功加载 ViT-{spatial_size} 预训练权重")
-                else:
-                    print(f"⚠️  使用随机初始化的 ViT-{spatial_size}（未使用预训练）")
+                    print(f"✅ 成功加载 ViT-{spatial_size} ImageNet 预训练权重")
+                # 不打印随机初始化的消息，因为可能马上会加载 checkpoint
             except Exception as e:
                 print(f"❌ 加载预训练权重失败: {e}")
                 print(f"⚠️  回退到随机初始化...")

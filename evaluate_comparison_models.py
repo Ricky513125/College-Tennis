@@ -96,7 +96,7 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
         raise ValueError(f"Unknown model type: {model_type}")
     
     # Load checkpoint
-    print(f"Loading checkpoint: {checkpoint_path}")
+    print(f"\nLoading trained checkpoint: {checkpoint_path}")
     state_dict = torch.load(checkpoint_path, map_location='cpu')
     
     if model_type == 'mdfed':
@@ -106,7 +106,7 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
     
     model = model.to(device)
     model.eval()
-    print("✓ Model loaded successfully")
+    print("✓ Loaded trained model successfully (checkpoint weights loaded)")
     
     return model
 
