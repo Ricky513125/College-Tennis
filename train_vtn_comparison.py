@@ -336,8 +336,8 @@ def train_vtn(args):
         train_loss = 0
         for batch in train_loader:
             frames = batch['frame'].cuda()
-            coarse_label = batch['coarse'].cuda()
-            fine_label = batch['fine'].cuda()
+            coarse_label = batch['coarse_label'].cuda()
+            fine_label = batch['fine_label'].cuda()
             
             optimizer.zero_grad()
             
@@ -362,8 +362,8 @@ def train_vtn(args):
         with torch.no_grad():
             for batch in val_loader:
                 frames = batch['frame'].cuda()
-                coarse_label = batch['coarse'].cuda()
-                fine_label = batch['fine'].cuda()
+                coarse_label = batch['coarse_label'].cuda()
+                fine_label = batch['fine_label'].cuda()
                 
                 coarse_pred, fine_pred = model(frames)
                 loss, _, _ = model.compute_loss(
