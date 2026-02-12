@@ -141,16 +141,17 @@ def train_epoch(model, train_loader, optimizer, scaler, device, fg_weight=5):
             )
             coarse_loss = (coarse_loss * coarse_mask.reshape(-1)).mean()
             
-            # Fine-grained loss (element classification)
-            fine_loss = nn.functional.cross_entropy(
-                fine_pred.reshape(-1, fine_pred.size(-1)),
-                fine_label.reshape(-1),
+            # Fine-grained loss (element classification) - multi-label
+            # fine_label is [batch_size, clip_len, num_classes] with binary values
+            fine_loss = nn.functional.binary_cross_entropy_with_logits(
+                fine_pred,
+                fine_label.float(),
                 reduction='none'
             )
             # Only compute fine loss on event frames
-            event_mask = (coarse_label == 1).float()
-            fine_loss = (fine_loss.reshape(fine_label.shape) * event_mask * coarse_mask).sum()
-            fine_loss = fine_loss / (event_mask * coarse_mask).sum().clamp(min=1)
+            event_mask = (coarse_label == 1).float().unsqueeze(-1)  # [batch, clip_len, 1]
+            fine_loss = (fine_loss * event_mask * coarse_mask.unsqueeze(-1)).sum()
+            fine_loss = fine_loss / (event_mask * coarse_mask.unsqueeze(-1)).sum().clamp(min=1)
             
             # Total loss
             loss = coarse_loss + fg_weight * fine_loss
@@ -170,12 +171,13 @@ def train_epoch(model, train_loader, optimizer, scaler, device, fg_weight=5):
             total_coarse_correct += coarse_correct.item()
             total_coarse_samples += coarse_mask.sum().item()
             
-            # Fine accuracy (only on event frames)
-            fine_pred_labels = fine_pred.argmax(dim=-1)
-            event_mask = (coarse_label == 1).float()
-            fine_correct = ((fine_pred_labels == fine_label) * event_mask * coarse_mask).sum()
+            # Fine accuracy (only on event frames) - multi-label with threshold 0.5
+            fine_pred_binary = (torch.sigmoid(fine_pred) > 0.5).float()
+            event_mask = (coarse_label == 1).float().unsqueeze(-1)
+            # Calculate per-element accuracy
+            fine_correct = ((fine_pred_binary == fine_label) * event_mask * coarse_mask.unsqueeze(-1)).sum()
             total_fine_correct += fine_correct.item()
-            total_fine_samples += (event_mask * coarse_mask).sum().item()
+            total_fine_samples += (event_mask * coarse_mask.unsqueeze(-1)).sum().item()
         
         # Update progress bar
         pbar.set_postfix({
@@ -221,15 +223,15 @@ def validate_epoch(model, val_loader, device, fg_weight=5):
                 )
                 coarse_loss = (coarse_loss * coarse_mask.reshape(-1)).mean()
                 
-                # Fine-grained loss
-                fine_loss = nn.functional.cross_entropy(
-                    fine_pred.reshape(-1, fine_pred.size(-1)),
-                    fine_label.reshape(-1),
+                # Fine-grained loss - multi-label
+                fine_loss = nn.functional.binary_cross_entropy_with_logits(
+                    fine_pred,
+                    fine_label.float(),
                     reduction='none'
                 )
-                event_mask = (coarse_label == 1).float()
-                fine_loss = (fine_loss.reshape(fine_label.shape) * event_mask * coarse_mask).sum()
-                fine_loss = fine_loss / (event_mask * coarse_mask).sum().clamp(min=1)
+                event_mask = (coarse_label == 1).float().unsqueeze(-1)
+                fine_loss = (fine_loss * event_mask * coarse_mask.unsqueeze(-1)).sum()
+                fine_loss = fine_loss / (event_mask * coarse_mask.unsqueeze(-1)).sum().clamp(min=1)
                 
                 loss = coarse_loss + fg_weight * fine_loss
             
@@ -241,11 +243,11 @@ def validate_epoch(model, val_loader, device, fg_weight=5):
             total_coarse_correct += coarse_correct.item()
             total_coarse_samples += coarse_mask.sum().item()
             
-            fine_pred_labels = fine_pred.argmax(dim=-1)
-            event_mask = (coarse_label == 1).float()
-            fine_correct = ((fine_pred_labels == fine_label) * event_mask * coarse_mask).sum()
+            fine_pred_binary = (torch.sigmoid(fine_pred) > 0.5).float()
+            event_mask = (coarse_label == 1).float().unsqueeze(-1)
+            fine_correct = ((fine_pred_binary == fine_label) * event_mask * coarse_mask.unsqueeze(-1)).sum()
             total_fine_correct += fine_correct.item()
-            total_fine_samples += (event_mask * coarse_mask).sum().item()
+            total_fine_samples += (event_mask * coarse_mask.unsqueeze(-1)).sum().item()
             
             pbar.set_postfix({
                 'loss': f'{loss.item():.4f}',
