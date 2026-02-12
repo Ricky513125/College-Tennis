@@ -48,19 +48,26 @@ from dataset.input_process import ActionSeqVideoDataset
 from util.eval import edit_score
 
 
-def load_model(model_type, checkpoint_path, num_classes, device='cuda'):
+def load_model(model_type, checkpoint_path, num_classes, device='cuda', 
+               vtn_spatial_size='small', vtn_temporal_type='longformer',
+               clip_len=96, crop_dim=224):
     """
     加载指定类型的模型
     """
     print(f"\nLoading {model_type.upper()} model...")
     
     if model_type == 'vtn':
+        print(f"  Spatial size: {vtn_spatial_size}")
+        print(f"  Temporal type: {vtn_temporal_type}")
+        print(f"  Clip len: {clip_len}")
+        print(f"  Crop dim: {crop_dim}")
+        
         model = VTN_Model(
             num_classes=num_classes,
-            clip_len=96,
-            img_size=224,
-            spatial_size='small',
-            temporal_type='longformer'
+            clip_len=clip_len,
+            img_size=crop_dim,
+            spatial_size=vtn_spatial_size,
+            temporal_type=vtn_temporal_type
         )
     elif model_type == 'i3d':
         model = I3D_Model(
@@ -168,9 +175,9 @@ def evaluate_video(model, model_type, video_name, annotations, classes, args, de
         classes=classes,
         label_file=temp_ann_file,
         frame_dir=args.frame_dir,
-        clip_len=96,
-        overlap_len=48,
-        crop_dim=224,
+        clip_len=args.clip_len,
+        overlap_len=args.clip_len // 2,
+        crop_dim=args.crop_dim,
         stride=2,
         flow_dir=args.flow_dir if model_type == 'mdfed' else None,
         pose_dir=None,
@@ -288,6 +295,34 @@ def main():
         help='Device to use (cuda or cpu)'
     )
     
+    # VTN-specific parameters
+    parser.add_argument(
+        '--vtn_spatial_size',
+        type=str,
+        default='small',
+        choices=['tiny', 'small', 'base', 'large'],
+        help='VTN spatial backbone size (default: small)'
+    )
+    parser.add_argument(
+        '--vtn_temporal_type',
+        type=str,
+        default='longformer',
+        choices=['longformer', 'linformer', 'transformer'],
+        help='VTN temporal transformer type (default: longformer)'
+    )
+    parser.add_argument(
+        '--clip_len',
+        type=int,
+        default=96,
+        help='Number of frames per clip (default: 96)'
+    )
+    parser.add_argument(
+        '--crop_dim',
+        type=int,
+        default=224,
+        help='Crop dimension for images (default: 224)'
+    )
+    
     args = parser.parse_args()
     
     # Set default output file
@@ -328,7 +363,13 @@ def main():
     print(f"Number of videos: {len(video_groups)}")
     
     # Load model
-    model = load_model(args.model_type, args.checkpoint, len(classes), args.device)
+    model = load_model(
+        args.model_type, args.checkpoint, len(classes), args.device,
+        vtn_spatial_size=args.vtn_spatial_size,
+        vtn_temporal_type=args.vtn_temporal_type,
+        clip_len=args.clip_len,
+        crop_dim=args.crop_dim
+    )
     
     # Evaluate each video
     print(f"\n{'='*80}")
