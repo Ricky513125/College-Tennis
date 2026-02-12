@@ -176,6 +176,15 @@ class VTN(nn.Module):
         #Spatial to temporal rearrange
         self.spatial2temporal = Rearrange('(b f) d -> b f d', f=frames)
 
+        # 根据 spatial_size 确定特征维度
+        vit_dim_map = {
+            'tiny': 192,
+            'small': 384,
+            'base': 768,
+            'large': 1024
+        }
+        vit_dim = vit_dim_map[spatial_size]
+
         #[Temporal] Transformer_attention
         assert temporal_type in ['longformer', 'linformer', 'transformer'], "Only longformer, linformer, transformer are supported"
         # # Copy seq_len to frames
@@ -183,17 +192,17 @@ class VTN(nn.Module):
         
         if temporal_type == 'longformer':
           # self.temporal_transformer = Longformer(
-          #   dim=768, depth=3, heads=12, dim_head=128, mlp_dim=3072, attention_window=8, attention_mode='sliding_chunks', emb_dropout=0.1, dropout=0.1, pool='cls', seq_len=frames)
+          #   dim=vit_dim, depth=3, heads=12, dim_head=128, mlp_dim=3072, attention_window=8, attention_mode='sliding_chunks', emb_dropout=0.1, dropout=0.1, pool='cls', seq_len=frames)
           self.temporal_transformer = Longformer(
-            dim=768, depth=1, heads=12, dim_head=128, mlp_dim=3072, attention_window=8, attention_mode='sliding_chunks', emb_dropout=0.1, dropout=0.1, pool='cls', seq_len=frames)
+            dim=vit_dim, depth=1, heads=12, dim_head=128, mlp_dim=vit_dim*4, attention_window=8, attention_mode='sliding_chunks', emb_dropout=0.1, dropout=0.1, pool='cls', seq_len=frames)
         elif temporal_type == 'linformer':
           self.temporal_transformer = Linformer(
-            k=8, dim=768, depth=3, heads=12, dim_head=128, mlp_dim=3072, one_kv_head=True, share_kv=True, dropout=0.1, emb_dropout=0.5, seq_len=frames)
+            k=8, dim=vit_dim, depth=3, heads=12, dim_head=128, mlp_dim=vit_dim*4, one_kv_head=True, share_kv=True, dropout=0.1, emb_dropout=0.5, seq_len=frames)
         elif temporal_type == 'transformer':
           # self.temporal_transformer = Transformer(
-          #   dim=768, depth=3, heads=12, dim_head=128, mlp_dim=3072, dropout=0.1, seq_len=frames)
+          #   dim=vit_dim, depth=3, heads=12, dim_head=128, mlp_dim=3072, dropout=0.1, seq_len=frames)
           self.temporal_transformer = Transformer(
-              dim=192, depth=1, heads=12, dim_head=128, mlp_dim=1024, dropout=0.1, seq_len=frames)
+              dim=vit_dim, depth=1, heads=12, dim_head=128, mlp_dim=vit_dim*4, dropout=0.1, seq_len=frames)
 
         # # Classifer
         # self.mlp_head = nn.Sequential(
