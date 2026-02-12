@@ -161,79 +161,6 @@ def predict_video(model, model_type, video_dataset, device='cuda'):
     return coarse_preds[0], fine_preds[0]  # [total_frames, ...]
 
 
-def evaluate_video(model, model_type, video_name, annotations, classes, args, device='cuda'):
-    """
-    评估单个视频
-    """
-    # Create temporary annotation file for this video
-    temp_ann_file = os.path.join(args.temp_dir, f'{video_name}.json')
-    os.makedirs(args.temp_dir, exist_ok=True)
-    store_json(temp_ann_file, annotations)
-    
-    # Create dataset
-    dataset = ActionSeqVideoDataset(
-        classes=classes,
-        label_file=temp_ann_file,
-        frame_dir=args.frame_dir,
-        clip_len=args.clip_len,
-        overlap_len=args.clip_len // 2,
-        crop_dim=args.crop_dim,
-        stride=2,
-        flow_dir=args.flow_dir if model_type == 'mdfed' else None,
-        pose_dir=None,
-        pad_len=0,
-        flip=False,
-        multi_crop=False,
-        skip_partial_end=True
-    )
-    
-    # Get ground truth labels
-    coarse_gt, fine_gt = dataset.get_labels(video_name)
-    
-    # Predict
-    coarse_pred, fine_pred = predict_video(model, model_type, dataset, device)
-    
-    # Convert predictions to labels
-    coarse_pred_labels = torch.argmax(coarse_pred, dim=-1).numpy()  # [total_frames]
-    fine_pred_labels = (torch.sigmoid(fine_pred) > 0.5).numpy()  # [total_frames, num_classes]
-    
-    # Ensure same length
-    min_len = min(len(coarse_gt), len(coarse_pred_labels))
-    coarse_gt = coarse_gt[:min_len]
-    coarse_pred_labels = coarse_pred_labels[:min_len]
-    fine_gt = fine_gt[:min_len]
-    fine_pred_labels = fine_pred_labels[:min_len]
-    
-    # Calculate metrics
-    edit = edit_score(coarse_pred_labels, coarse_gt, norm=True, bg_class=[0])
-    
-    # Frame-level accuracy
-    coarse_acc = np.mean(coarse_pred_labels == coarse_gt)
-    
-    # Multi-label metrics
-    fine_pred_flat = fine_pred_labels.reshape(-1)
-    fine_gt_flat = fine_gt.reshape(-1)
-    
-    tp = np.sum((fine_pred_flat == 1) & (fine_gt_flat == 1))
-    fp = np.sum((fine_pred_flat == 1) & (fine_gt_flat == 0))
-    fn = np.sum((fine_pred_flat == 0) & (fine_gt_flat == 1))
-    
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
-    
-    return {
-        'video_name': video_name,
-        'num_rallies': len(annotations),
-        'num_frames': len(coarse_gt),
-        'edit_score': float(edit),
-        'coarse_accuracy': float(coarse_acc),
-        'fine_precision': float(precision),
-        'fine_recall': float(recall),
-        'fine_f1': float(f1)
-    }
-
-
 def main():
     parser = argparse.ArgumentParser(
         description='Evaluate VTN, I3D, or MD-FED model on manual annotations'
@@ -275,12 +202,6 @@ def main():
         type=str,
         default='elements.txt',
         help='Path to elements.txt file'
-    )
-    parser.add_argument(
-        '--temp_dir',
-        type=str,
-        default='./temp_eval',
-        help='Temporary directory for evaluation'
     )
     parser.add_argument(
         '--output_file',
@@ -348,19 +269,7 @@ def main():
     # Load annotations
     print(f"\nLoading annotations...")
     annotations = load_json(args.manual_annotations)
-    print(f"Total annotations: {len(annotations)}")
-    
-    # Group by video
-    video_groups = defaultdict(list)
-    for ann in annotations:
-        video_name = ann['video']
-        if '/' in video_name:
-            video_id = video_name.split('/')[0]
-        else:
-            video_id = video_name
-        video_groups[video_id].append(ann)
-    
-    print(f"Number of videos: {len(video_groups)}")
+    print(f"Total rallies to evaluate: {len(annotations)}")
     
     # Load model
     model = load_model(
@@ -371,63 +280,122 @@ def main():
         crop_dim=args.crop_dim
     )
     
-    # Evaluate each video
+    # Create dataset with all annotations
     print(f"\n{'='*80}")
-    print("Starting evaluation...")
+    print("Creating dataset...")
     print(f"{'='*80}\n")
     
-    results = []
+    dataset = ActionSeqVideoDataset(
+        classes=classes,
+        label_file=args.manual_annotations,
+        frame_dir=args.frame_dir,
+        clip_len=args.clip_len,
+        overlap_len=args.clip_len // 2,
+        crop_dim=args.crop_dim,
+        stride=2,
+        flow_dir=args.flow_dir if args.model_type == 'mdfed' else None,
+        pose_dir=None,
+        pad_len=0,
+        flip=False,
+        multi_crop=False,
+        skip_partial_end=True
+    )
     
-    for video_id in tqdm(sorted(video_groups.keys()), desc="Evaluating videos"):
+    print(f"Dataset created with {len(dataset)} clips")
+    
+    # Predict on entire dataset
+    print(f"\n{'='*80}")
+    print("Predicting on all rallies...")
+    print(f"{'='*80}\n")
+    
+    coarse_pred, fine_pred = predict_video(model, args.model_type, dataset, args.device)
+    
+    # Convert predictions
+    coarse_pred_labels = torch.argmax(coarse_pred, dim=-1).numpy()
+    fine_pred_labels = (torch.sigmoid(fine_pred) > 0.5).numpy()
+    
+    print(f"Predictions completed: {len(coarse_pred_labels):,} frames")
+    
+    # Get ground truth for all videos
+    print(f"\n{'='*80}")
+    print("Collecting ground truth labels...")
+    print(f"{'='*80}\n")
+    
+    all_coarse_gt = []
+    all_fine_gt = []
+    
+    video_names = [v[0] for v in dataset.videos]
+    for video_name in tqdm(video_names, desc="Loading ground truth"):
         try:
-            result = evaluate_video(
-                model, args.model_type, video_id,
-                video_groups[video_id], classes, args, args.device
-            )
-            results.append(result)
-            
-            print(f"\n{video_id}:")
-            print(f"  Edit Score: {result['edit_score']:.4f}")
-            print(f"  Fine F1: {result['fine_f1']:.4f}")
-            
+            coarse_gt, fine_gt = dataset.get_labels(video_name)
+            all_coarse_gt.append(coarse_gt)
+            all_fine_gt.append(fine_gt)
         except Exception as e:
-            print(f"\n❌ Error evaluating {video_id}: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"\n❌ Error loading labels for {video_name}: {e}")
             continue
     
-    # Calculate averages
-    if results:
-        avg_edit = np.mean([r['edit_score'] for r in results])
-        avg_f1 = np.mean([r['fine_f1'] for r in results])
-        avg_coarse_acc = np.mean([r['coarse_accuracy'] for r in results])
-        
-        print(f"\n{'='*80}")
-        print("Summary")
-        print(f"{'='*80}")
-        print(f"Average Edit Score: {avg_edit:.4f}")
-        print(f"Average Fine F1: {avg_f1:.4f}")
-        print(f"Average Coarse Accuracy: {avg_coarse_acc:.4f}")
-        print(f"{'='*80}\n")
-        
-        # Save results
-        output_data = {
-            'model_type': args.model_type,
-            'checkpoint': args.checkpoint,
-            'num_videos': len(results),
-            'average_edit_score': float(avg_edit),
-            'average_fine_f1': float(avg_f1),
-            'average_coarse_accuracy': float(avg_coarse_acc),
-            'per_video_results': results
-        }
-        
-        store_json(args.output_file, output_data, pretty=True)
-        print(f"✓ Results saved to: {args.output_file}\n")
+    # Concatenate all ground truth
+    all_coarse_gt = np.concatenate(all_coarse_gt)
+    all_fine_gt = np.concatenate(all_fine_gt, axis=0)
     
-    # Clean up
-    import shutil
-    if os.path.exists(args.temp_dir):
-        shutil.rmtree(args.temp_dir)
+    # Ensure same length
+    min_len = min(len(all_coarse_gt), len(coarse_pred_labels))
+    all_coarse_gt = all_coarse_gt[:min_len]
+    all_coarse_pred = coarse_pred_labels[:min_len]
+    all_fine_gt = all_fine_gt[:min_len]
+    all_fine_pred = fine_pred_labels[:min_len]
+    
+    print(f"Matched {min_len:,} frames for evaluation")
+    
+    # Calculate overall metrics
+    print(f"\n{'='*80}")
+    print("Calculating metrics...")
+    print(f"{'='*80}\n")
+    
+    # Edit Score
+    edit = edit_score(all_coarse_pred, all_coarse_gt, norm=True, bg_class=[0])
+    
+    # Coarse accuracy
+    coarse_acc = np.mean(all_coarse_pred == all_coarse_gt)
+    
+    # Fine-grained metrics
+    all_fine_pred_flat = all_fine_pred.reshape(-1)
+    all_fine_gt_flat = all_fine_gt.reshape(-1)
+    
+    tp = np.sum((all_fine_pred_flat == 1) & (all_fine_gt_flat == 1))
+    fp = np.sum((all_fine_pred_flat == 1) & (all_fine_gt_flat == 0))
+    fn = np.sum((all_fine_pred_flat == 0) & (all_fine_gt_flat == 1))
+    
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    
+    print(f"{'='*80}")
+    print("Evaluation Results")
+    print(f"{'='*80}")
+    print(f"Total frames: {len(all_coarse_gt):,}")
+    print(f"Edit Score: {edit:.4f}")
+    print(f"Coarse Accuracy: {coarse_acc:.4f}")
+    print(f"Fine-grained Precision: {precision:.4f}")
+    print(f"Fine-grained Recall: {recall:.4f}")
+    print(f"Fine-grained F1: {f1:.4f}")
+    print(f"{'='*80}\n")
+    
+    # Save results
+    output_data = {
+        'model_type': args.model_type,
+        'checkpoint': args.checkpoint,
+        'num_rallies': len(annotations),
+        'num_frames': int(len(all_coarse_gt)),
+        'edit_score': float(edit),
+        'coarse_accuracy': float(coarse_acc),
+        'fine_precision': float(precision),
+        'fine_recall': float(recall),
+        'fine_f1': float(f1)
+    }
+    
+    store_json(args.output_file, output_data, pretty=True)
+    print(f"✓ Results saved to: {args.output_file}\n")
 
 
 if __name__ == '__main__':
