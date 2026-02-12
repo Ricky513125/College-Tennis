@@ -15,9 +15,22 @@ from torchvision import transforms
 
 
 class VTN(nn.Module):
-    def __init__(self, frames, num_classes, img_size=224, patch_size=16, spatial_frozen=False, spatial_size='base', temporal_type='longformer', spatial_suffix=''):
+    def __init__(self, frames, num_classes, img_size=224, img_height=None, img_width=None, 
+                 patch_size=16, spatial_frozen=False, spatial_size='base', 
+                 temporal_type='longformer', spatial_suffix=''):
         super().__init__()
         self.frames = frames
+        
+        # 支持矩形输入
+        if img_height is not None and img_width is not None:
+            self.img_height = img_height
+            self.img_width = img_width
+            # timm 的 img_size 可以是 tuple (height, width)
+            model_img_size = (img_height, img_width)
+        else:
+            self.img_height = img_size
+            self.img_width = img_size
+            model_img_size = img_size
 
         # # Convert args
         # spatial_args = Namespace(**spatial_args)
@@ -26,7 +39,15 @@ class VTN(nn.Module):
         self.collapse_frames = Rearrange('b f c h w -> (b f) c h w')
 
         #[Spatial] Transformer attention 
-        self.spatial_transformer = timm.create_model(f'vit_{spatial_size}_patch{patch_size}_{img_size}{spatial_suffix}', pretrained=True, img_size=224, in_chans=3, attn_drop_rate=0.0, drop_rate=0.0)
+        # timm 支持矩形输入：img_size 可以是 int 或 (height, width) tuple
+        self.spatial_transformer = timm.create_model(
+            f'vit_{spatial_size}_patch{patch_size}_{img_size}{spatial_suffix}', 
+            pretrained=True, 
+            img_size=model_img_size,  # 支持矩形
+            in_chans=3, 
+            attn_drop_rate=0.0, 
+            drop_rate=0.0
+        )
         
         # Freeze spatial backbone
         self.spatial_frozen = spatial_frozen
