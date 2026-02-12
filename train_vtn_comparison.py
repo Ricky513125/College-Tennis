@@ -35,11 +35,12 @@ class VTN_MD_FED(nn.Module):
     """
     def __init__(self, num_classes, clip_len, img_size=112, img_height=None, img_width=None,
                  patch_size=16, spatial_size='base', temporal_type='longformer', temporal_arch='gru',
-                 pretrained=True):
+                 pretrained=True, pretrained_path=None):
         super().__init__()
         
         self._num_classes = num_classes
         self._clip_len = clip_len
+        self.pretrained_path = pretrained_path  # 保存以供 VTN 使用
         
         # 支持矩形输入：如果指定了 img_height 和 img_width，使用矩形；否则使用正方形
         if img_height is not None and img_width is not None:
@@ -68,7 +69,8 @@ class VTN_MD_FED(nn.Module):
             spatial_frozen=False,  # 不冻结spatial backbone
             spatial_size=spatial_size,  # 'tiny', 'small', 'base'
             temporal_type=temporal_type,  # 'longformer', 'linformer', 'transformer'
-            pretrained=pretrained  # 是否使用预训练权重
+            pretrained=pretrained,  # 是否使用预训练权重
+            pretrained_path=getattr(self, 'pretrained_path', None)  # 本地权重路径
         )
         
         # Feature dimension from ViT
@@ -238,7 +240,8 @@ def train_vtn(args):
             spatial_size=args.vtn_spatial_size,
             temporal_type=args.vtn_temporal_type,
             temporal_arch=args.temporal_arch,
-            pretrained=use_pretrained
+            pretrained=use_pretrained,
+            pretrained_path=args.pretrained_path  # 传递本地权重路径
         ).cuda()
         img_size_str = f"{args.img_width}×{args.img_height}"
     else:
@@ -252,7 +255,8 @@ def train_vtn(args):
             spatial_size=args.vtn_spatial_size,
             temporal_type=args.vtn_temporal_type,
             temporal_arch=args.temporal_arch,
-            pretrained=use_pretrained
+            pretrained=use_pretrained,
+            pretrained_path=args.pretrained_path  # 传递本地权重路径
         ).cuda()
         img_size_str = f"{args.crop_dim}×{args.crop_dim}"
     
@@ -454,6 +458,12 @@ def main():
         '--no_pretrained',
         action='store_true',
         help='不使用预训练权重（如果下载失败，使用此选项从头训练）'
+    )
+    parser.add_argument(
+        '--pretrained_path',
+        type=str,
+        default=None,
+        help='本地预训练权重路径 (例如: models/vit_small_patch16_224.pth)'
     )
     parser.add_argument(
         '--clip_len',
