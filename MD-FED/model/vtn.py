@@ -215,7 +215,9 @@ class VTN(nn.Module):
         else:
           x = self.spatial_transformer.forward_features(x)
 
-        # print(x.shape)
+        # x shape: [batch_size*frames, num_patches+1, embed_dim]
+        # Extract class token (first token) for temporal modeling
+        x = x[:, 0]  # [batch_size*frames, embed_dim]
   
         # Spatial to temporal
         x = self.spatial2temporal(x)
