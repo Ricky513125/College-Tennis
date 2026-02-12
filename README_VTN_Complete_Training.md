@@ -1,148 +1,96 @@
-# VTN 完整训练流程：模仿 MD-FED 的三阶段训练
+# VTN 训练策略：跳过 Stage 1 的合理性
 
-## 📋 概述
+## ⚠️ 重要澄清
 
-为了与 MD-FED 进行公平对比，VTN 应该遵循相同的训练流程：
+**VTN 应该跳过 Stage 1，直接在 manual_annotations.json 上训练！**
 
-| 阶段 | MD-FED | VTN | 数据集 |
-|------|--------|-----|--------|
-| **Stage 1** | Skeleton特征预训练 | RGB特征预训练 | F3Set (train/val) |
-| **Stage 2** | 多模态蒸馏 | ❌ 跳过 | NCAA (弱监督) |
-| **Stage 3** | Few-shot微调 | Few-shot微调 | manual_annotations.json |
+## 📋 为什么跳过 Stage 1？
 
-**为什么跳过 Stage 2？**
-- MD-FED 的 Stage 2 是多模态蒸馏（RGB/Flow → Skeleton）
-- VTN 是单模态模型（只用 RGB），不需要蒸馏
-- 直接从 Stage 1 → Stage 3 是合理的简化
+### MD-FED 的三阶段训练
 
----
+| 阶段 | 输入数据 | 模型组件 | 目的 |
+|------|---------|---------|------|
+| **Stage 1** | **Skeleton (pose)** | STGCN++ | Skeleton 特征预训练 |
+| **Stage 2** | RGB + Flow + Skeleton | RGB/Flow → Skeleton 蒸馏 | 多模态融合 |
+| **Stage 3** | RGB + Flow | 完整模型 | Few-shot 微调 |
 
-## 🚀 完整训练步骤
+### VTN 的训练策略
 
-### **Step 1: 准备 F3Set 数据**
+| 阶段 | 输入数据 | 模型组件 | 目的 |
+|------|---------|---------|------|
+| **Stage 1** | ❌ **跳过** | - | VTN 不使用 skeleton |
+| **Stage 2** | ❌ **跳过** | - | VTN 是单模态（纯 RGB） |
+| **Stage 3** | RGB only | ViT + Longformer | Few-shot 微调 |
 
-确保 F3Set 数据已解压到正确位置：
+### 关键区别
 
-```bash
-# 检查数据结构
-ls F3Set/data/f3set-tennis/
-# 应该包含: train.json, val.json, test.json, elements.txt
+1. **MD-FED Stage 1**: 使用 **skeleton 数据** + STGCN++
+2. **VTN**: 不使用 skeleton，只用 RGB
 
-# 检查帧数据
-ls /path/to/f3set_frames/
-```
-
----
-
-### **Step 2: Stage 1 - F3Set 预训练**
-
-在 F3Set 数据集上预训练 VTN 模型：
-
-#### **推荐配置 (ViT-small)**
-
-```bash
-python train_vtn_stage1.py \
-    --frame_dir /mnt/ssd2/lingyu/College-Tennis/f3set_frames \
-    --save_dir ./vtn_outputs/stage1_small \
-    --crop_dim 224 \
-    --clip_len 96 \
-    --batch_size 4 \
-    --num_epochs 50 \
-    --vtn_spatial_size small \
-    --vtn_temporal_type longformer \
-    --learning_rate 0.001 \
-    --pretrained_path ~/.cache/torch/hub/checkpoints/vit_small_patch16_224.pth
-```
-
-**参数说明：**
-- `--frame_dir`: F3Set 提取的帧目录
-- `--crop_dim 224`: 标准 ViT 输入大小
-- `--vtn_spatial_size small`: 使用 ViT-small (384维)
-- `--vtn_temporal_type longformer`: 使用 Longformer 进行时序建模
-- `--pretrained_path`: 使用 ImageNet 预训练的 ViT 权重
-
-#### **高性能配置 (ViT-base)**
-
-如果显存充足，可以使用更大的模型：
-
-```bash
-python train_vtn_stage1.py \
-    --frame_dir /mnt/ssd2/lingyu/College-Tennis/f3set_frames \
-    --save_dir ./vtn_outputs/stage1_base \
-    --crop_dim 224 \
-    --clip_len 96 \
-    --batch_size 2 \
-    --num_epochs 50 \
-    --vtn_spatial_size base \
-    --vtn_temporal_type longformer \
-    --learning_rate 0.001 \
-    --pretrained_path ~/.cache/torch/hub/checkpoints/vit_base_patch16_224.pth
-```
-
-**预期结果：**
-- 训练时间：约 8-12 小时（取决于 GPU）
-- Best model 保存在：`./vtn_outputs/stage1_small/best_model.pt`
-- 所有 checkpoint：`./vtn_outputs/stage1_small/checkpoint_XXX.pt`
+**结论**: VTN 在 RGB 上做 Stage 1 是不合理的，因为：
+- 输入模态与 MD-FED 完全不同（RGB vs Skeleton）
+- 对比会不公平（不同的预训练数据）
 
 ---
 
-### **Step 3: Stage 3 - Few-Shot 微调**
+## 🚀 推荐训练步骤
 
-使用 Stage 1 的 checkpoint 初始化，在 `manual_annotations.json` 上进行 few-shot 微调：
+### **直接在 manual_annotations.json 上训练**
 
-#### **从 Stage 1 开始微调 (推荐)**
+使用 ImageNet 预训练的 ViT，直接在你的数据上训练：
+
+#### **推荐配置 (ViT-small) - 快速验证**
 
 ```bash
 python train_vtn_comparison.py \
     --manual_annotations manual_annotations.json \
     --frame_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_frames_rally \
-    --save_dir ./vtn_outputs/stage3_from_stage1 \
-    --stage1_checkpoint ./vtn_outputs/stage1_small/best_model.pt \
+    --save_dir ./vtn_outputs/vtn_small \
     --crop_dim 224 \
     --clip_len 96 \
     --batch_size 4 \
     --num_epochs 500 \
     --vtn_spatial_size small \
     --vtn_temporal_type longformer \
-    --learning_rate 0.0001 \
+    --pretrained_path ~/.cache/torch/hub/checkpoints/vit_small_patch16_224.pth \
     --early_stop_patience 20
 ```
 
-**关键参数：**
-- `--stage1_checkpoint`: **重要！** 从 Stage 1 加载预训练权重
-- `--learning_rate 0.0001`: 比 Stage 1 更小的学习率（微调）
-- `--early_stop_patience 20`: 自动早停
+**训练时间**: 约 2-4 小时
 
-#### **从随机初始化开始 (不推荐，仅用于对比实验)**
+#### **高性能配置 (ViT-base) - 最佳性能**
 
 ```bash
 python train_vtn_comparison.py \
     --manual_annotations manual_annotations.json \
     --frame_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_frames_rally \
-    --save_dir ./vtn_outputs/stage3_from_scratch \
+    --save_dir ./vtn_outputs/vtn_base \
     --crop_dim 224 \
     --clip_len 96 \
-    --batch_size 4 \
+    --batch_size 2 \
     --num_epochs 500 \
-    --vtn_spatial_size small \
+    --vtn_spatial_size base \
     --vtn_temporal_type longformer \
-    --no_pretrained
+    --pretrained_path ~/.cache/torch/hub/checkpoints/vit_base_patch16_224.pth \
+    --early_stop_patience 20
 ```
+
+**训练时间**: 约 4-8 小时（显存需求更高）
 
 ---
 
-### **Step 4: 评估 VTN 模型**
+### **评估 VTN 模型**
 
-使用训练好的 Stage 3 模型进行评估：
+使用训练好的模型进行评估：
 
 ```bash
 python evaluate_comparison_models.py \
     --model_type vtn \
-    --checkpoint ./vtn_outputs/stage3_from_stage1/best_model.pt \
+    --checkpoint ./vtn_outputs/vtn_base/best_model.pt \
     --manual_annotations manual_annotations.json \
     --frame_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_frames_rally \
     --elements_file MD-FED/data/f3set-tennis-sub/elements.txt \
-    --vtn_spatial_size small \
+    --vtn_spatial_size base \
     --vtn_temporal_type longformer \
     --clip_len 96 \
     --crop_dim 224 \
@@ -151,7 +99,7 @@ python evaluate_comparison_models.py \
 
 ---
 
-### **Step 5: 与 MD-FED 对比**
+### **与 MD-FED 对比**
 
 #### **评估 MD-FED Stage 3 模型**
 
