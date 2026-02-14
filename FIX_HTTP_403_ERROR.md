@@ -50,7 +50,7 @@ mkdir -p ~/.cache/torch/hub/checkpoints
 
 # 下载 ViT-Small 权重（22M 参数）
 wget https://hf-mirror.com/timm/vit_small_patch16_224.augreg_in21k_ft_in1k/resolve/main/pytorch_model.bin \
-    -O ~/.cache/torch/hub/checkpoints/vit_small_patch16_224.pth
+    -O models/vit_small_patch16_224.pth
 
 # 或使用 curl
 curl -L https://hf-mirror.com/timm/vit_small_patch16_224.augreg_in21k_ft_in1k/resolve/main/pytorch_model.bin \

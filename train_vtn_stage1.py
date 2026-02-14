@@ -174,10 +174,10 @@ def train_epoch(model, train_loader, optimizer, scaler, device, fg_weight=5):
             # Fine accuracy (only on event frames) - multi-label with threshold 0.5
             fine_pred_binary = (torch.sigmoid(fine_pred) > 0.5).float()
             event_mask = (coarse_label == 1).float().unsqueeze(-1)
-            # Calculate per-element accuracy
-            fine_correct = ((fine_pred_binary == fine_label) * event_mask * coarse_mask.unsqueeze(-1)).sum()
-            total_fine_correct += fine_correct.item()
-            total_fine_samples += (event_mask * coarse_mask.unsqueeze(-1)).sum().item()
+            # Calculate per-frame accuracy (all elements correct in a frame = 1.0)
+            per_frame_correct = ((fine_pred_binary == fine_label).float().mean(dim=-1) * event_mask.squeeze(-1) * coarse_mask)
+            total_fine_correct += per_frame_correct.sum().item()
+            total_fine_samples += (event_mask.squeeze(-1) * coarse_mask).sum().item()
         
         # Update progress bar
         pbar.set_postfix({
@@ -245,9 +245,9 @@ def validate_epoch(model, val_loader, device, fg_weight=5):
             
             fine_pred_binary = (torch.sigmoid(fine_pred) > 0.5).float()
             event_mask = (coarse_label == 1).float().unsqueeze(-1)
-            fine_correct = ((fine_pred_binary == fine_label) * event_mask * coarse_mask.unsqueeze(-1)).sum()
-            total_fine_correct += fine_correct.item()
-            total_fine_samples += (event_mask * coarse_mask.unsqueeze(-1)).sum().item()
+            per_frame_correct = ((fine_pred_binary == fine_label).float().mean(dim=-1) * event_mask.squeeze(-1) * coarse_mask)
+            total_fine_correct += per_frame_correct.sum().item()
+            total_fine_samples += (event_mask.squeeze(-1) * coarse_mask).sum().item()
             
             pbar.set_postfix({
                 'loss': f'{loss.item():.4f}',
@@ -454,19 +454,6 @@ def main():
             'val_fine_acc': val_fine_acc
         })
         
-        # Save checkpoint
-        checkpoint_path = os.path.join(args.save_dir, f'checkpoint_{epoch:03d}.pt')
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'scaler_state_dict': scaler.state_dict(),
-            'train_loss': train_loss,
-            'val_loss': val_loss,
-            'best_val_loss': best_val_loss,
-            'history': history
-        }, checkpoint_path)
-        
         # Save best model
         if val_loss < best_val_loss - args.early_stop_min_delta:
             best_val_loss = val_loss
@@ -482,6 +469,19 @@ def main():
             patience_counter = 0
         else:
             patience_counter += 1
+        
+        # Save last checkpoint (for resuming training)
+        last_checkpoint_path = os.path.join(args.save_dir, 'last_checkpoint.pt')
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'scaler_state_dict': scaler.state_dict(),
+            'train_loss': train_loss,
+            'val_loss': val_loss,
+            'best_val_loss': best_val_loss,
+            'history': history
+        }, last_checkpoint_path)
         
         # Early stopping
         if patience_counter >= args.early_stop_patience:
