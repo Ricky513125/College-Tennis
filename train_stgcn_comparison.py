@@ -101,15 +101,45 @@ class STGCN_MD_FED(nn.Module):
         if skeleton is None:
             raise ValueError("STGCN model requires skeleton input")
         
-        batch_size, clip_len = skeleton.shape[:2]
+        # Check skeleton shape and handle accordingly
+        if len(skeleton.shape) == 4:
+            # If skeleton is [batch_size, clip_len, num_joints, 2] (no person dimension)
+            # Add person dimension: [batch_size, clip_len, 1, num_joints, 2]
+            skeleton = skeleton.unsqueeze(2)  # [batch_size, clip_len, 1, num_joints, 2]
+        
+        batch_size, clip_len, num_person, num_joints, num_coords = skeleton.shape
         
         # Extract skeleton features
-        # STGCN expects: [N, M, V, C] where N=batch*clip_len, M=num_person, V=num_joints, C=2
-        skeleton_flat = skeleton.view(-1, *skeleton.shape[2:])  # [batch*clip_len, M, V, C]
-        sk_feat = self._sk_feat(skeleton_flat)  # [batch*clip_len, feat_dim]
+        # STGCN expects: [N, M, T, V, C] where N=batch, M=num_person, T=time, V=num_joints, C=2
+        # skeleton shape: [batch_size, clip_len, M, V, C]
+        # Need to transpose to [batch_size, M, clip_len, V, C] (same as MD-FED)
+        skeleton_transposed = skeleton.transpose(1, 2)  # [batch_size, M, clip_len, V, C]
         
-        # Reshape back to [batch, clip_len, feat_dim]
-        sk_feat = sk_feat.view(batch_size, clip_len, self._sk_feat_dim)
+        # STGCN forward (expects [N, M, T, V, C])
+        sk_feat = self._sk_feat(skeleton_transposed)  # [batch_size, M, ...]
+        
+        # Aggregate over person dimension and spatial dimensions (same as MD-FED)
+        # sk_feat shape after STGCN: [batch_size, M, feat_dim, T', V'] or similar
+        sk_feat = sk_feat.mean(dim=1)  # [batch_size, feat_dim, T', V'] - average over persons
+        sk_feat = sk_feat.mean(dim=-1)  # [batch_size, feat_dim, T'] - average over joints
+        sk_feat = sk_feat.transpose(1, 2)  # [batch_size, T', feat_dim]
+        
+        # Reshape to [batch_size, clip_len, feat_dim]
+        # If T' != clip_len, interpolate
+        if sk_feat.shape[1] != clip_len:
+            sk_feat = torch.nn.functional.interpolate(
+                sk_feat.transpose(1, 2),  # [batch_size, feat_dim, T']
+                size=clip_len,
+                mode='linear',
+                align_corners=False
+            ).transpose(1, 2)  # [batch_size, clip_len, feat_dim]
+        
+        # Ensure correct feature dimension
+        if sk_feat.shape[2] != self._sk_feat_dim:
+            # If feature dimension doesn't match, use a projection layer
+            if not hasattr(self, '_feat_proj'):
+                self._feat_proj = nn.Linear(sk_feat.shape[2], self._sk_feat_dim).to(sk_feat.device)
+            sk_feat = self._feat_proj(sk_feat)
         
         # Temporal modeling
         sk_feat, _ = self._sk_head(sk_feat)  # [batch, clip_len, d_model]
