@@ -42,6 +42,8 @@ sys.path.insert(0, str(Path(__file__).parent / 'MD-FED'))
 # Import models
 from train_vtn_comparison import VTN_MD_FED as VTN_Model
 from train_i3d_comparison import I3D_MD_FED as I3D_Model
+from train_tsm_comparison import TSM_Flow_MD_FED as TSM_Model
+from train_stgcn_comparison import STGCN_MD_FED as STGCN_Model
 from util.dataset import load_classes
 from util.io import load_json, store_json
 from dataset.input_process import ActionSeqVideoDataset
@@ -50,7 +52,8 @@ from util.eval import edit_score
 
 def load_model(model_type, checkpoint_path, num_classes, device='cuda', 
                vtn_spatial_size='small', vtn_temporal_type='longformer',
-               clip_len=96, crop_dim=224):
+               clip_len=96, crop_dim=224, tsm_visual_arch='rny002_tsm', tsm_temporal_arch='gru',
+               stgcn_skeleton_arch='stgcn++', stgcn_temporal_arch='gru'):
     """
     加载指定类型的模型
     """
@@ -74,6 +77,30 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
         model = I3D_Model(
             num_classes=num_classes,
             clip_len=96
+        )
+    elif model_type == 'tsm':
+        print(f"  Visual arch: {tsm_visual_arch}")
+        print(f"  Temporal arch: {tsm_temporal_arch}")
+        print(f"  Clip len: {clip_len}")
+        print(f"  Crop dim: {crop_dim}")
+        
+        model = TSM_Model(
+            num_classes=num_classes,
+            clip_len=clip_len,
+            visual_arch=tsm_visual_arch,
+            temporal_arch=tsm_temporal_arch,
+            pretrained=False  # 不需要预训练权重，直接加载 checkpoint
+        )
+    elif model_type == 'stgcn':
+        print(f"  Skeleton arch: {stgcn_skeleton_arch}")
+        print(f"  Temporal arch: {stgcn_temporal_arch}")
+        print(f"  Clip len: {clip_len}")
+        
+        model = STGCN_Model(
+            num_classes=num_classes,
+            clip_len=clip_len,
+            skeleton_arch=stgcn_skeleton_arch,
+            temporal_arch=stgcn_temporal_arch
         )
     elif model_type == 'mdfed':
         # Import MD-FED model
@@ -120,7 +147,7 @@ def main():
         '--model_type',
         type=str,
         required=True,
-        choices=['vtn', 'i3d', 'mdfed'],
+        choices=['vtn', 'i3d', 'mdfed', 'tsm', 'stgcn'],
         help='Model type to evaluate'
     )
     parser.add_argument(
@@ -145,7 +172,13 @@ def main():
         '--flow_dir',
         type=str,
         default=None,
-        help='Path to optical flow directory (only for MD-FED)'
+        help='Path to optical flow directory (required for MD-FED and TSM)'
+    )
+    parser.add_argument(
+        '--pose_dir',
+        type=str,
+        default=None,
+        help='Path to skeleton (pose) directory (required for MD-FED and STGCN)'
     )
     parser.add_argument(
         '--elements_file',
@@ -199,6 +232,38 @@ def main():
         help='Save detailed predictions to .npz file for analysis'
     )
     
+    # TSM-specific parameters
+    parser.add_argument(
+        '--tsm_visual_arch',
+        type=str,
+        default='rny002_tsm',
+        choices=['rny002_tsm', 'rn50_tsm'],
+        help='TSM visual architecture (default: rny002_tsm)'
+    )
+    parser.add_argument(
+        '--tsm_temporal_arch',
+        type=str,
+        default='gru',
+        choices=['gru', 'deeper_gru'],
+        help='TSM temporal architecture (default: gru)'
+    )
+    
+    # STGCN-specific parameters
+    parser.add_argument(
+        '--stgcn_skeleton_arch',
+        type=str,
+        default='stgcn++',
+        choices=['stgcn++', 'stgcn'],
+        help='STGCN skeleton architecture (default: stgcn++)'
+    )
+    parser.add_argument(
+        '--stgcn_temporal_arch',
+        type=str,
+        default='gru',
+        choices=['gru', 'deeper_gru'],
+        help='STGCN temporal architecture (default: gru)'
+    )
+    
     args = parser.parse_args()
     
     # Set default output file
@@ -232,7 +297,11 @@ def main():
         vtn_spatial_size=args.vtn_spatial_size,
         vtn_temporal_type=args.vtn_temporal_type,
         clip_len=args.clip_len,
-        crop_dim=args.crop_dim
+        crop_dim=args.crop_dim,
+        tsm_visual_arch=args.tsm_visual_arch,
+        tsm_temporal_arch=args.tsm_temporal_arch,
+        stgcn_skeleton_arch=args.stgcn_skeleton_arch,
+        stgcn_temporal_arch=args.stgcn_temporal_arch
     )
     
     # Create dataset with all annotations
@@ -248,8 +317,8 @@ def main():
         overlap_len=args.clip_len // 2,
         crop_dim=args.crop_dim,
         stride=2,
-        flow_dir=args.flow_dir if args.model_type == 'mdfed' else None,
-        pose_dir=None,
+        flow_dir=args.flow_dir if args.model_type in ['mdfed', 'tsm'] else None,
+        pose_dir=args.pose_dir if args.model_type in ['mdfed', 'stgcn'] else None,
         pad_len=0,
         flip=False,
         multi_crop=False,
@@ -284,6 +353,24 @@ def main():
         with torch.no_grad():
             if args.model_type in ['vtn', 'i3d']:
                 coarse_pred, fine_pred = model(frames)
+            elif args.model_type == 'tsm':
+                # TSM only uses flow
+                flow = clip.get('flow')
+                if flow is None:
+                    raise ValueError("TSM model requires flow data, but flow_dir not provided")
+                flow = flow.to(args.device)
+                if len(flow.shape) == 6:
+                    flow = flow[:, 0]
+                coarse_pred, fine_pred = model(frames=None, flow=flow)
+            elif args.model_type == 'stgcn':
+                # STGCN only uses skeleton
+                skeleton = clip.get('skeleton')
+                if skeleton is None:
+                    raise ValueError("STGCN model requires skeleton data, but pose_dir not provided")
+                skeleton = skeleton.to(args.device)
+                if len(skeleton.shape) == 6:
+                    skeleton = skeleton[:, 0]
+                coarse_pred, fine_pred = model(frames=None, flow=None, skeleton=skeleton)
             else:  # mdfed
                 flow = clip.get('flow')
                 skeleton = clip.get('skeleton')
