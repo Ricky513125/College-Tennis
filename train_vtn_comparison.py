@@ -221,12 +221,19 @@ def train_vtn(args):
     # Create model
     print("\nStep 2: Creating VTN model...")
     
-    # 使用矩形或正方形输入
-    use_pretrained = not args.no_pretrained
-    if use_pretrained:
+    # 确定初始化策略
+    # 优先级：Stage 1 checkpoint > ImageNet 预训练 > 随机初始化
+    if args.stage1_checkpoint:
+        print("✅ 将加载 Stage 1 checkpoint（优先于 ImageNet 预训练）")
+        # 如果提供了 Stage 1 checkpoint，先不使用 ImageNet 预训练
+        # 因为 Stage 1 checkpoint 会覆盖所有权重
+        use_pretrained = False
+    elif not args.no_pretrained:
         print("✅ 将使用 ImageNet 预训练权重")
+        use_pretrained = True
     else:
         print("⚠️  将从随机初始化开始训练（不使用预训练）")
+        use_pretrained = False
     
     if args.img_height is not None and args.img_width is not None:
         # 矩形输入
@@ -305,39 +312,55 @@ def train_vtn(args):
         pin_memory=True, num_workers=4
     )
     
+    # Use smaller batch size for validation to save memory
+    val_batch_size = max(1, args.batch_size // 2) if args.batch_size > 1 else 1
     val_loader = DataLoader(
-        val_data, shuffle=False, batch_size=args.batch_size,
+        val_data, shuffle=False, batch_size=val_batch_size,
         pin_memory=True, num_workers=4
     )
     
     # Load Stage 1 checkpoint if provided
     if args.stage1_checkpoint:
-        print(f"\nLoading Stage 1 checkpoint: {args.stage1_checkpoint}")
+        print(f"\n{'='*80}")
+        print(f"Loading Stage 1 checkpoint: {args.stage1_checkpoint}")
+        print(f"{'='*80}")
+        
+        if not os.path.exists(args.stage1_checkpoint):
+            print(f"❌ Error: Stage 1 checkpoint not found: {args.stage1_checkpoint}")
+            print(f"   Please check the path and try again.")
+            sys.exit(1)
+        
         checkpoint = torch.load(args.stage1_checkpoint, map_location='cuda')
         
         # Load model weights
         if 'model_state_dict' in checkpoint:
             model_state = checkpoint['model_state_dict']
+            print(f"✓ Checkpoint format: Full checkpoint (with metadata)")
             if 'epoch' in checkpoint:
-                print(f"  Checkpoint from epoch {checkpoint['epoch'] + 1}")
+                print(f"  Source epoch: {checkpoint['epoch'] + 1}")
             if 'val_loss' in checkpoint:
-                print(f"  Validation loss: {checkpoint['val_loss']:.4f}")
+                print(f"  Source validation loss: {checkpoint['val_loss']:.4f}")
         else:
             # Assume it's a direct state dict
             model_state = checkpoint
+            print(f"✓ Checkpoint format: Direct state dict")
         
         # Load weights (allow partial loading for compatibility)
         model_dict = model.state_dict()
         pretrained_dict = {k: v for k, v in model_state.items() if k in model_dict and model_dict[k].shape == v.shape}
+        skipped_params = len(model_state) - len(pretrained_dict)
         
-        if len(pretrained_dict) < len(model_state):
-            print(f"⚠️  Warning: Only loaded {len(pretrained_dict)}/{len(model_state)} parameters from Stage 1 checkpoint")
+        if skipped_params > 0:
+            print(f"⚠️  Warning: Skipped {skipped_params} parameters (shape mismatch or not in current model)")
             print(f"   This is expected if the model architecture differs (e.g., different num_classes)")
         
         model_dict.update(pretrained_dict)
         model.load_state_dict(model_dict)
-        print(f"✓ Successfully loaded Stage 1 checkpoint")
-        print(f"  Loaded parameters: {len(pretrained_dict)}/{len(model_state)}")
+        
+        print(f"\n✅ Successfully loaded Stage 1 checkpoint!")
+        print(f"   Loaded: {len(pretrained_dict)}/{len(model_state)} parameters")
+        print(f"   Model is now initialized with Stage 1 weights (not random initialization)")
+        print(f"{'='*80}\n")
     
     # Setup training
     print("\nStep 4: Setup training...")
@@ -357,6 +380,15 @@ def train_vtn(args):
     print("\nStep 5: Training...")
     os.makedirs(args.save_dir, exist_ok=True)
     
+    # Clear GPU cache before training
+    torch.cuda.empty_cache()
+    
+    # Print memory optimization info
+    if args.gradient_accumulation_steps > 1:
+        effective_batch_size = args.batch_size * args.gradient_accumulation_steps
+        print(f"⚠️  Using gradient accumulation: {args.gradient_accumulation_steps} steps")
+        print(f"   Effective batch size: {effective_batch_size} (actual: {args.batch_size})")
+    
     best_val_loss = float('inf')
     losses = []
     patience_counter = 0
@@ -366,27 +398,47 @@ def train_vtn(args):
         model.train()
         train_loss = 0
         train_pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{args.num_epochs} [Train]', leave=False)
-        for batch in train_pbar:
+        
+        optimizer.zero_grad()
+        accumulation_steps = 0
+        
+        for batch_idx, batch in enumerate(train_pbar):
             frames = batch['frame'].cuda()
             coarse_label = batch['coarse_label'].cuda()
             fine_label = batch['fine_label'].cuda()
-            
-            optimizer.zero_grad()
             
             with torch.cuda.amp.autocast():
                 coarse_pred, fine_pred = model(frames)
                 loss, coarse_loss, fine_loss = model.compute_loss(
                     coarse_pred, fine_pred, coarse_label, fine_label
                 )
+                # Scale loss by accumulation steps
+                loss = loss / args.gradient_accumulation_steps
             
             scaler.scale(loss).backward()
+            accumulation_steps += 1
+            train_loss += loss.item() * args.gradient_accumulation_steps
+            
+            # Update weights every gradient_accumulation_steps
+            if accumulation_steps >= args.gradient_accumulation_steps:
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
+                lr_scheduler.step()
+                accumulation_steps = 0
+            
+            # Update progress bar with current batch loss
+            train_pbar.set_postfix({
+                'loss': f'{loss.item() * args.gradient_accumulation_steps:.4f}',
+                'acc_steps': f'{accumulation_steps}/{args.gradient_accumulation_steps}'
+            })
+        
+        # Handle remaining gradients if any
+        if accumulation_steps > 0:
             scaler.step(optimizer)
             scaler.update()
+            optimizer.zero_grad()
             lr_scheduler.step()
-            
-            train_loss += loss.item()
-            # Update progress bar with current batch loss
-            train_pbar.set_postfix({'loss': f'{loss.item():.4f}'})
         
         train_loss /= len(train_loader)
         
@@ -410,6 +462,9 @@ def train_vtn(args):
                 val_pbar.set_postfix({'loss': f'{loss.item():.4f}'})
         
         val_loss /= len(val_loader)
+        
+        # Clear GPU cache after validation
+        torch.cuda.empty_cache()
         
         # Get current learning rate
         current_lr = optimizer.param_groups[0]['lr']
@@ -601,6 +656,12 @@ def main():
         type=float,
         default=0.001,
         help='Minimum change to qualify as improvement (default: 0.001)'
+    )
+    parser.add_argument(
+        '--gradient_accumulation_steps',
+        type=int,
+        default=1,
+        help='Number of gradient accumulation steps (default: 1). Use this to simulate larger batch sizes when GPU memory is limited.'
     )
     
     args = parser.parse_args()
