@@ -318,7 +318,12 @@ def train_vtn(args):
         # Load model weights
         if 'model_state_dict' in checkpoint:
             model_state = checkpoint['model_state_dict']
+            if 'epoch' in checkpoint:
+                print(f"  Checkpoint from epoch {checkpoint['epoch'] + 1}")
+            if 'val_loss' in checkpoint:
+                print(f"  Validation loss: {checkpoint['val_loss']:.4f}")
         else:
+            # Assume it's a direct state dict
             model_state = checkpoint
         
         # Load weights (allow partial loading for compatibility)
@@ -354,6 +359,7 @@ def train_vtn(args):
     
     best_val_loss = float('inf')
     losses = []
+    patience_counter = 0
     
     for epoch in range(args.num_epochs):
         # Train
@@ -410,15 +416,18 @@ def train_vtn(args):
         
         print(f'[Epoch {epoch+1}/{args.num_epochs}] Train: {train_loss:.5f} | Val: {val_loss:.5f} | LR: {current_lr:.2e}')
         
-        # Save checkpoint
-        if val_loss < best_val_loss:
+        # Save checkpoint and check for improvement
+        if val_loss < best_val_loss - args.early_stop_min_delta:
             best_val_loss = val_loss
+            patience_counter = 0
             print(f'  ✅ New best val loss: {val_loss:.5f} → Saving checkpoint...')
             # Save best model separately
             torch.save(
                 model.state_dict(),
                 os.path.join(args.save_dir, 'best_model.pt')
             )
+        else:
+            patience_counter += 1
         
         losses.append({
             'epoch': epoch,
@@ -427,13 +436,30 @@ def train_vtn(args):
         })
         
         store_json(os.path.join(args.save_dir, 'loss.json'), losses, pretty=True)
+        
+        # Save last checkpoint (for resuming training)
         torch.save(
-            model.state_dict(),
-            os.path.join(args.save_dir, f'checkpoint_{epoch:03d}.pt')
+            {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'scaler_state_dict': scaler.state_dict(),
+                'train_loss': train_loss,
+                'val_loss': val_loss,
+                'best_val_loss': best_val_loss,
+                'losses': losses
+            },
+            os.path.join(args.save_dir, 'last_checkpoint.pt')
         )
+        
+        # Early stopping
+        if patience_counter >= args.early_stop_patience:
+            print(f'\n⚠️  Early stopping triggered after {patience_counter} epochs without improvement')
+            break
     
     print(f'\n{"="*80}')
     print(f'Training Complete!')
+    print(f'Best validation loss: {best_val_loss:.5f}')
     print(f'Checkpoints saved to: {args.save_dir}')
     print(f"{'='*80}\n")
 
@@ -563,6 +589,18 @@ def main():
         type=str,
         default=None,
         help='Path to Stage 1 checkpoint for initialization (recommended for fair comparison with MD-FED)'
+    )
+    parser.add_argument(
+        '--early_stop_patience',
+        type=int,
+        default=10,
+        help='Early stopping patience (number of epochs without improvement, default: 10)'
+    )
+    parser.add_argument(
+        '--early_stop_min_delta',
+        type=float,
+        default=0.001,
+        help='Minimum change to qualify as improvement (default: 0.001)'
     )
     
     args = parser.parse_args()
