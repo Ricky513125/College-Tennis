@@ -384,11 +384,38 @@ def main():
         CosineAnnealingLR(optimizer, T_max=cosine_steps, eta_min=args.learning_rate * 0.01)
     ])
     
-    # Step 7: Training loop
-    print("\nStep 6: Starting training...")
-    print("=" * 80)
-    
+    # Step 7: Save configuration
+    print("\nStep 6: Saving configuration...")
     os.makedirs(args.save_dir, exist_ok=True)
+    
+    config = {
+        'dataset': args.dataset_name,
+        'num_classes': len(classes),
+        'visual_arch': args.visual_arch,
+        'skeleton_arch': args.skeleton_arch,
+        'temporal_arch': args.temporal_arch,
+        'num_samples': -1,
+        'clip_len': args.clip_len,
+        'batch_size': args.batch_size,
+        'crop_dim': args.crop_dim,
+        'window': 5,
+        'stage': 2,
+        'stride': args.stride,
+        'num_epochs': args.num_epochs,
+        'warm_up_epochs': args.warm_up_epochs,
+        'learning_rate': args.learning_rate,
+        'start_val_epoch': args.num_epochs - 20,
+        'gpu_parallel': False,
+        'dilate_len': 0
+    }
+    
+    config_path = os.path.join(args.save_dir, 'config.json')
+    store_json(config_path, config, pretty=True)
+    print(f"✓ Configuration saved to {config_path}")
+    
+    # Step 8: Training loop
+    print("\nStep 7: Starting training...")
+    print("=" * 80)
     
     best_val_loss = float('inf')
     train_losses = []
