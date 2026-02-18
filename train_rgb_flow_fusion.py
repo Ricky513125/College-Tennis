@@ -339,8 +339,99 @@ def train_rgb_flow(args):
         pin_memory=True, num_workers=4
     )
     
+    # Load Stage 2 checkpoint if provided (RECOMMENDED: for fair comparison with MD-FED)
+    if args.stage2_checkpoint:
+        print(f"\n{'='*80}")
+        print(f"Loading MD-FED Stage 2 checkpoint: {args.stage2_checkpoint}")
+        print(f"{'='*80}")
+        print("⚠️  重要：这将从 MD-FED Stage 2 加载 RGB 和 Flow 特征提取器权重")
+        print("   这样可以与 MD-FED Stage 3 进行公平对比（都使用 Stage 2 预训练）")
+        print(f"{'='*80}")
+        
+        if not os.path.exists(args.stage2_checkpoint):
+            print(f"❌ Error: Stage 2 checkpoint not found: {args.stage2_checkpoint}")
+            print(f"   Please check the path and try again.")
+            sys.exit(1)
+        
+        checkpoint = torch.load(args.stage2_checkpoint, map_location='cuda')
+        
+        # Extract model state dict
+        if 'model_state_dict' in checkpoint:
+            stage2_state = checkpoint['model_state_dict']
+        elif 'state_dict' in checkpoint:
+            stage2_state = checkpoint['state_dict']
+        else:
+            stage2_state = checkpoint
+        
+        # MD-FED Stage 2 model has keys like:
+        # - _model._rgb_feat.* (RGB feature extractor)
+        # - _model._flow_feat.* (Flow feature extractor)
+        # - _model._rgb_head.* (RGB temporal head)
+        # - _model._flow_head.* (Flow temporal head)
+        # We need to map these to our model's keys:
+        # - _rgb_feat.*
+        # - _flow_feat.*
+        # - _rgb_head.*
+        # - _flow_head.*
+        
+        model_dict = model.state_dict()
+        pretrained_dict = {}
+        
+        # Map Stage 2 weights to our model
+        for stage2_key, stage2_value in stage2_state.items():
+            # Remove _model. prefix if present
+            if stage2_key.startswith('_model.'):
+                our_key = stage2_key[7:]  # Remove '_model.' prefix
+            else:
+                our_key = stage2_key
+            
+            # Only load RGB and Flow feature extractors and temporal heads
+            # Skip skeleton-related weights
+            if our_key in model_dict:
+                if model_dict[our_key].shape == stage2_value.shape:
+                    pretrained_dict[our_key] = stage2_value
+                else:
+                    print(f"⚠️  Shape mismatch for {our_key}: {model_dict[our_key].shape} vs {stage2_value.shape}")
+            elif our_key.startswith('_rgb_feat.') or our_key.startswith('_flow_feat.') or \
+                 our_key.startswith('_rgb_head.') or our_key.startswith('_flow_head.'):
+                # Try to find matching key in our model
+                found = False
+                for model_key in model_dict.keys():
+                    if model_key.endswith(our_key.split('.', 1)[1]):  # Match suffix
+                        if model_dict[model_key].shape == stage2_value.shape:
+                            pretrained_dict[model_key] = stage2_value
+                            found = True
+                            break
+        
+        if len(pretrained_dict) == 0:
+            print("⚠️  Warning: No matching weights found! Trying alternative key mapping...")
+            # Alternative: try direct key matching
+            for stage2_key, stage2_value in stage2_state.items():
+                # Try various key patterns
+                possible_keys = [
+                    stage2_key,
+                    stage2_key.replace('_model.', ''),
+                    stage2_key.replace('Impl.', ''),
+                ]
+                for key in possible_keys:
+                    if key in model_dict and model_dict[key].shape == stage2_value.shape:
+                        pretrained_dict[key] = stage2_value
+                        break
+        
+        if len(pretrained_dict) > 0:
+            model_dict.update(pretrained_dict)
+            model.load_state_dict(model_dict)
+            print(f"\n✅ Successfully loaded Stage 2 checkpoint!")
+            print(f"   Loaded: {len(pretrained_dict)} parameters")
+            print(f"   This includes RGB and Flow feature extractors from MD-FED Stage 2")
+        else:
+            print("⚠️  Warning: Could not load any weights from Stage 2 checkpoint")
+            print("   Continuing with ImageNet pretrained weights only")
+        
+        print(f"{'='*80}\n")
+    
     # Load Stage 1 checkpoint if provided (optional, for RGB/Flow pretraining)
-    if args.stage1_checkpoint:
+    elif args.stage1_checkpoint:
         print(f"\n{'='*80}")
         print(f"Loading Stage 1 checkpoint: {args.stage1_checkpoint}")
         print(f"{'='*80}")
@@ -661,10 +752,16 @@ def main():
         help='Number of gradient accumulation steps (default: 1). Use this to simulate larger batch sizes when GPU memory is limited.'
     )
     parser.add_argument(
+        '--stage2_checkpoint',
+        type=str,
+        default=None,
+        help='Path to MD-FED Stage 2 checkpoint (RECOMMENDED for fair comparison). This loads RGB and Flow feature extractors from Stage 2 distillation.'
+    )
+    parser.add_argument(
         '--stage1_checkpoint',
         type=str,
         default=None,
-        help='Path to Stage 1 checkpoint for initialization (optional)'
+        help='Path to Stage 1 checkpoint for initialization (optional, lower priority than --stage2_checkpoint)'
     )
     
     args = parser.parse_args()
