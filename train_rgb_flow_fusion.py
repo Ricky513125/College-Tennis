@@ -153,19 +153,15 @@ class RGB_Flow_Fusion_MD_FED(nn.Module):
         batch_size, clip_len, rgb_channels, height, width = frames.shape
         _, _, flow_channels, _, _ = flow.shape
         
-        # Extract RGB features
+        # Extract RGB features (same as MD-FED)
         rgb_flat = frames.view(-1, rgb_channels, height, width)
-        rgb_feat = self._rgb_feat(rgb_flat)  # [batch*clip_len, feat_dim, H', W']
-        rgb_feat = torch.nn.functional.adaptive_avg_pool2d(rgb_feat, (1, 1))
-        rgb_feat = rgb_feat.squeeze(-1).squeeze(-1)  # [batch*clip_len, feat_dim]
-        rgb_feat = rgb_feat.view(batch_size, clip_len, self._rgb_feat_dim)
+        rgb_feat = self._rgb_feat(rgb_flat)  # [batch*clip_len, feat_dim] (RegNet with head.fc=Identity outputs 2D)
+        rgb_feat = rgb_feat.reshape(batch_size, clip_len, -1)
         
-        # Extract Flow features
+        # Extract Flow features (same as MD-FED)
         flow_flat = flow.view(-1, flow_channels, height, width)
-        flow_feat = self._flow_feat(flow_flat)  # [batch*clip_len, feat_dim, H', W']
-        flow_feat = torch.nn.functional.adaptive_avg_pool2d(flow_feat, (1, 1))
-        flow_feat = flow_feat.squeeze(-1).squeeze(-1)  # [batch*clip_len, feat_dim]
-        flow_feat = flow_feat.view(batch_size, clip_len, self._flow_feat_dim)
+        flow_feat = self._flow_feat(flow_flat)  # [batch*clip_len, feat_dim] (RegNet with head.fc=Identity outputs 2D)
+        flow_feat = flow_feat.reshape(batch_size, clip_len, -1)
         
         # Temporal modeling
         rgb_feat, _ = self._rgb_head(rgb_feat)  # [batch, clip_len, d_model]
@@ -429,7 +425,7 @@ def train_rgb_flow(args):
             coarse_label = batch['coarse_label'].cuda()
             fine_label = batch['fine_label'].cuda()
             
-            with torch.cuda.amp.autocast():
+            with torch.amp.autocast('cuda'):
                 coarse_pred, fine_pred = model(frames=frames, flow=flow)
                 loss, coarse_loss, fine_loss = model.compute_loss(
                     coarse_pred, fine_pred, coarse_label, fine_label
