@@ -39,6 +39,7 @@ from util.dataset import load_classes
 from util.io import load_json, store_json
 from torch.utils.data import DataLoader
 import random
+import glob
 
 
 def convert_manual_annotations_to_md_fed_format(manual_annotations_file, output_file, elements_file):
@@ -388,15 +389,64 @@ def main():
     
     # Step 6: Load Stage 2 checkpoint
     print(f"\nStep 5: Loading Stage 2 checkpoint...")
-    losses, best_epoch, best_criterion = get_best_epoch_and_history(
-        args.stage2_checkpoint_dir, 'edit'
-    )
-    print(f'Loading from Stage 2 epoch {best_epoch}')
     
-    stage2_checkpoint = torch.load(
-        os.path.join(args.stage2_checkpoint_dir, f'checkpoint_{best_epoch:03d}.pt'),
-        map_location=args.device
-    )
+    # Try to load checkpoint - handle case where loss.json doesn't exist
+    stage2_checkpoint_path = None
+    best_epoch = None
+    
+    # Method 1: Try to use loss.json to find best epoch
+    loss_json_path = os.path.join(args.stage2_checkpoint_dir, 'loss.json')
+    if os.path.exists(loss_json_path):
+        try:
+            losses, best_epoch, best_criterion = get_best_epoch_and_history(
+                args.stage2_checkpoint_dir, 'loss'  # Use 'loss' instead of 'edit' since we don't compute edit in stage2
+            )
+            stage2_checkpoint_path = os.path.join(args.stage2_checkpoint_dir, f'checkpoint_{best_epoch:03d}.pt')
+            print(f'Found best epoch {best_epoch} from loss.json (val loss: {best_criterion:.6f})')
+        except Exception as e:
+            print(f'⚠️  Warning: Could not load from loss.json: {e}')
+            stage2_checkpoint_path = None
+    
+    # Method 2: Try to use best.pt if it exists
+    if stage2_checkpoint_path is None or not os.path.exists(stage2_checkpoint_path):
+        best_pt_path = os.path.join(args.stage2_checkpoint_dir, 'best.pt')
+        if os.path.exists(best_pt_path):
+            stage2_checkpoint_path = best_pt_path
+            print(f'Using best.pt checkpoint')
+            # Extract epoch from checkpoint if available
+            try:
+                temp_checkpoint = torch.load(best_pt_path, map_location='cpu')
+                if 'epoch' in temp_checkpoint:
+                    best_epoch = temp_checkpoint['epoch']
+                    print(f'  Epoch from checkpoint: {best_epoch}')
+            except:
+                pass
+    
+    # Method 3: Find the latest checkpoint
+    if stage2_checkpoint_path is None or not os.path.exists(stage2_checkpoint_path):
+        checkpoint_pattern = os.path.join(args.stage2_checkpoint_dir, 'checkpoint_*.pt')
+        checkpoints = glob.glob(checkpoint_pattern)
+        if checkpoints:
+            # Sort by epoch number
+            def get_epoch(fpath):
+                basename = os.path.basename(fpath)
+                return int(basename.replace('checkpoint_', '').replace('.pt', ''))
+            checkpoints.sort(key=get_epoch, reverse=True)
+            stage2_checkpoint_path = checkpoints[0]
+            best_epoch = get_epoch(stage2_checkpoint_path)
+            print(f'Using latest checkpoint: epoch {best_epoch}')
+        else:
+            raise FileNotFoundError(
+                f"❌ No checkpoint found in {args.stage2_checkpoint_dir}\n"
+                f"   Expected one of:\n"
+                f"   - loss.json (to find best epoch)\n"
+                f"   - best.pt (best checkpoint)\n"
+                f"   - checkpoint_*.pt (any checkpoint file)"
+            )
+    
+    # Load the checkpoint
+    print(f'Loading checkpoint: {os.path.basename(stage2_checkpoint_path)}')
+    stage2_checkpoint = torch.load(stage2_checkpoint_path, map_location=args.device)
     model.load(stage2_checkpoint)
     print("✓ Stage 2 checkpoint loaded")
     
