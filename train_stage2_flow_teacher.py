@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Train Stage 2 with RGB as Teacher (Ablation Study).
+Train Stage 2 with Flow as Teacher (Ablation Study).
 
-This is an ablation experiment where RGB is used as the teacher network,
-and Flow and Skeleton learn from RGB features (instead of the original
+This is an ablation experiment where Flow is used as the teacher network,
+and RGB and Skeleton learn from Flow features (instead of the original
 MD-FED where Skeleton is the teacher).
 
 Original MD-FED Stage 2:
@@ -11,10 +11,10 @@ Original MD-FED Stage 2:
 - Students: RGB, Flow
 - Loss: MSE(RGB_feat, Skeleton_feat) + MSE(Flow_feat, Skeleton_feat)
 
-This ablation (RGB as Teacher):
-- Teacher: RGB
-- Students: Flow, Skeleton
-- Loss: MSE(Flow_feat, RGB_feat) + MSE(Skeleton_feat, RGB_feat)
+This ablation (Flow as Teacher):
+- Teacher: Flow
+- Students: RGB, Skeleton
+- Loss: MSE(RGB_feat, Flow_feat) + MSE(Skeleton_feat, Flow_feat)
 """
 
 import os
@@ -51,15 +51,15 @@ from tqdm import tqdm
 from torch.optim.lr_scheduler import ChainedScheduler, LinearLR, CosineAnnealingLR
 
 
-class MD_FED_RGB_Teacher(MD_FED):
+class MD_FED_Flow_Teacher(MD_FED):
     """
-    Modified MD-FED with RGB as teacher network.
-    In Stage 2, Flow and Skeleton learn from RGB features.
+    Modified MD-FED with Flow as teacher network.
+    In Stage 2, RGB and Skeleton learn from Flow features.
     """
     
     def epoch(self, loader, optimizer=None, scaler=None, lr_scheduler=None, acc_grad_iter=1, fg_weight=5):
         """
-        Modified epoch function for RGB as teacher distillation.
+        Modified epoch function for Flow as teacher distillation.
         """
         if optimizer is None:
             self._model.eval()
@@ -77,25 +77,25 @@ class MD_FED_RGB_Teacher(MD_FED):
                 flow = loader.dataset.load_flow_gpu(batch, self._device)
                 skeleton = loader.dataset.load_skeleton_gpu(batch, self._device)
 
-                with torch.cuda.amp.autocast():
+                with torch.amp.autocast('cuda'):
                     loss = 0.
 
-                    # stage 2: multimodal distillation with RGB as teacher
+                    # stage 2: multimodal distillation with Flow as teacher
                     if self._stage == 2:
                         # Get features from all modalities
                         _, _, rgb_feat, flow_feat, sk_feat = self._model(frame, flow, skeleton)
                         
-                        # RGB as teacher: Flow and Skeleton learn from RGB
+                        # Flow as teacher: RGB and Skeleton learn from Flow
                         # L2 loss: students should match teacher
-                        flow2rgb_loss = F.mse_loss(flow_feat, rgb_feat)
-                        sk2rgb_loss = F.mse_loss(sk_feat, rgb_feat)
+                        rgb2flow_loss = F.mse_loss(rgb_feat, flow_feat)
+                        sk2flow_loss = F.mse_loss(sk_feat, flow_feat)
                         
-                        loss += flow2rgb_loss
-                        loss += sk2rgb_loss
+                        loss += rgb2flow_loss
+                        loss += sk2flow_loss
                         
                         # Log losses for monitoring
                         if batch_idx == 0 and mode == "Training":
-                            print(f"\n[RGB as Teacher] Flow→RGB loss: {flow2rgb_loss.item():.6f}, Skeleton→RGB loss: {sk2rgb_loss.item():.6f}")
+                            print(f"\n[Flow as Teacher] RGB→Flow loss: {rgb2flow_loss.item():.6f}, Skeleton→Flow loss: {sk2flow_loss.item():.6f}")
 
                 if optimizer is not None:
                     scaler.scale(loss).backward()
@@ -116,7 +116,7 @@ def prepare_stage2_data(manual_annotations_file, output_dir, dataset_name='ncaa-
     """
     Prepare Stage 2 training data (same as original Stage 2).
     """
-    print(f"Preparing Stage 2 data for RGB as Teacher ablation...")
+    print(f"Preparing Stage 2 data for Flow as Teacher ablation...")
     
     data_dir = Path(output_dir) / dataset_name
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -161,7 +161,7 @@ def prepare_stage2_data(manual_annotations_file, output_dir, dataset_name='ncaa-
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Train Stage 2 with RGB as Teacher (Ablation Study)'
+        description='Train Stage 2 with Flow as Teacher (Ablation Study)'
     )
     parser.add_argument(
         '--manual_annotations',
@@ -197,7 +197,7 @@ def main():
         '--save_dir',
         type=str,
         required=True,
-        help='Directory to save Stage 2 checkpoints (e.g., ./md_fed_outputs/stage2_rgb_teacher)'
+        help='Directory to save Stage 2 checkpoints (e.g., ./md_fed_outputs/stage2_flow_teacher)'
     )
     parser.add_argument(
         '--data_dir',
@@ -281,9 +281,9 @@ def main():
     args = parser.parse_args()
     
     print("=" * 80)
-    print("Stage 2 Training: RGB as Teacher (Ablation Study)")
+    print("Stage 2 Training: Flow as Teacher (Ablation Study)")
     print("=" * 80)
-    print("⚠️  消融实验：RGB 作为教师网络，Flow 和 Skeleton 学习 RGB 特征")
+    print("⚠️  消融实验：Flow 作为教师网络，RGB 和 Skeleton 学习 Flow 特征")
     print("=" * 80)
     
     # Step 1: Prepare data
@@ -341,7 +341,7 @@ def main():
     
     # Step 4: Create model
     print("\nStep 3: Creating model...")
-    model = MD_FED_RGB_Teacher(
+    model = MD_FED_Flow_Teacher(
         len(classes),
         args.visual_arch,
         args.skeleton_arch,
@@ -418,7 +418,8 @@ def main():
     print("=" * 80)
     
     best_val_loss = float('inf')
-    losses = []  # List of dicts for loss.json format
+    train_losses = []
+    val_losses = []
     
     for epoch in range(args.num_epochs):
         # Train
@@ -426,9 +427,11 @@ def main():
             train_loader, optimizer=optimizer, scaler=scaler,
             lr_scheduler=lr_scheduler, acc_grad_iter=args.acc_grad_iter
         )
+        train_losses.append(train_loss)
         
         # Validate
         val_loss = model.epoch(val_loader, optimizer=None)
+        val_losses.append(val_loss)
         
         # Get current learning rate
         current_lr = optimizer.param_groups[0]['lr']
@@ -454,15 +457,14 @@ def main():
             torch.save(checkpoint, best_path)
             print(f'  ✅ New best val loss: {val_loss:.6f}')
         
-        # Save loss.json in the format expected by get_best_epoch_and_history
-        losses.append({
-            'epoch': epoch,
-            'train': train_loss,
-            'val': val_loss,
-            'val_edit': 0  # Not computed in this script
-        })
-        loss_path = os.path.join(args.save_dir, 'loss.json')
-        store_json(loss_path, losses, pretty=True)
+        # Save history
+        history = {
+            'train_loss': train_losses,
+            'val_loss': val_losses
+        }
+        history_path = os.path.join(args.save_dir, 'history.json')
+        with open(history_path, 'w') as f:
+            json.dump(history, f, indent=2)
     
     print("\n" + "=" * 80)
     print("Training Complete!")
