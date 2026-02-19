@@ -51,6 +51,42 @@ from tqdm import tqdm
 from torch.optim.lr_scheduler import ChainedScheduler, LinearLR, CosineAnnealingLR
 
 
+def collate_fn_skeleton_padding(batch):
+    """
+    Custom collate function to handle skeleton data for tennis singles.
+    For tennis singles, we only need 2 people (the two players).
+    - If more than 2 people detected, keep only the first 2
+    - If less than 2 people, pad with zeros to 2
+    
+    Skeleton shape: [T, num_people, num_joints, 2]
+    """
+    TENNIS_SINGLES_NUM_PEOPLE = 2  # Tennis singles has 2 players
+    
+    # Normalize all skeleton tensors to exactly 2 people
+    normalized_batch = []
+    for item in batch:
+        if 'skeleton' in item and item['skeleton'] is not None:
+            skeleton = item['skeleton']
+            if len(skeleton.shape) == 4:  # [T, num_people, num_joints, 2]
+                T, num_people, num_joints, coords = skeleton.shape
+                
+                if num_people > TENNIS_SINGLES_NUM_PEOPLE:
+                    # Keep only first 2 people (tennis singles)
+                    skeleton = skeleton[:, :TENNIS_SINGLES_NUM_PEOPLE, :, :]
+                elif num_people < TENNIS_SINGLES_NUM_PEOPLE:
+                    # Pad with zeros to 2 people
+                    padding = torch.zeros(T, TENNIS_SINGLES_NUM_PEOPLE - num_people, num_joints, coords, 
+                                        dtype=skeleton.dtype, device=skeleton.device)
+                    skeleton = torch.cat([skeleton, padding], dim=1)
+                
+                item['skeleton'] = skeleton
+        normalized_batch.append(item)
+    
+    # Use default collate for the rest
+    from torch.utils.data._utils.collate import default_collate
+    return default_collate(normalized_batch)
+
+
 class MD_FED_Flow_Teacher(MD_FED):
     """
     Modified MD-FED with Flow as teacher network.
@@ -332,11 +368,13 @@ def main():
     
     train_loader = DataLoader(
         train_data, shuffle=True, batch_size=args.batch_size,
-        pin_memory=True, num_workers=4
+        pin_memory=True, num_workers=4,
+        collate_fn=collate_fn_skeleton_padding
     )
     val_loader = DataLoader(
         val_data, shuffle=False, batch_size=args.batch_size,
-        pin_memory=True, num_workers=4
+        pin_memory=True, num_workers=4,
+        collate_fn=collate_fn_skeleton_padding
     )
     
     # Step 4: Create model
