@@ -373,26 +373,32 @@ def main():
     }
     
     train_dataset = ActionSeqDataset(
+        classes,
         train_json,
         args.frame_dir,
-        args.flow_dir,
-        args.pose_dir,
-        classes,
-        clip_len=args.clip_len,
-        dataset_len=dataset_len,
-        randomize=True,
+        args.clip_len,
+        dataset_len,
+        is_eval=False,
+        dilate_len=0,
+        stage=2,
+        num_samples=-1,
+        flow_dir=args.flow_dir,
+        pose_dir=args.pose_dir,
         **dataset_kwargs
     )
     
     val_dataset = ActionSeqDataset(
+        classes,
         val_json,
         args.frame_dir,
-        args.flow_dir,
-        args.pose_dir,
-        classes,
-        clip_len=args.clip_len,
-        dataset_len=dataset_len // 4,
-        randomize=False,
+        args.clip_len,
+        dataset_len // 4,
+        is_eval=True,
+        dilate_len=0,
+        stage=2,
+        num_samples=-1,
+        flow_dir=args.flow_dir,
+        pose_dir=args.pose_dir,
         **dataset_kwargs
     )
     
