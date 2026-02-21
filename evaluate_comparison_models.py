@@ -220,8 +220,8 @@ def main():
     parser.add_argument(
         '--elements_file',
         type=str,
-        default='elements.txt',
-        help='Path to elements.txt file'
+        default=None,
+        help='Path to elements.txt file (default: MD-FED/data/f3set-tennis-sub/elements.txt or checkpoint_dir/elements.txt)'
     )
     parser.add_argument(
         '--output_file',
@@ -234,6 +234,12 @@ def main():
         type=str,
         default='cuda',
         help='Device to use (cuda or cpu)'
+    )
+    parser.add_argument(
+        '--batch_size',
+        type=int,
+        default=1,
+        help='Batch size for evaluation (default: 1)'
     )
     
     # VTN-specific parameters
@@ -361,6 +367,31 @@ def main():
         checkpoint_dir = os.path.dirname(args.checkpoint)
         args.output_file = os.path.join(checkpoint_dir, 'evaluation_results.json')
     
+    # Set default elements_file if not provided
+    if args.elements_file is None:
+        # Try checkpoint directory first
+        checkpoint_dir = os.path.dirname(args.checkpoint)
+        checkpoint_elements = os.path.join(checkpoint_dir, 'elements.txt')
+        if os.path.exists(checkpoint_elements):
+            args.elements_file = checkpoint_elements
+        else:
+            # Try MD-FED data directory
+            md_fed_elements = os.path.join(Path(__file__).parent, 'MD-FED', 'data', 'f3set-tennis-sub', 'elements.txt')
+            if os.path.exists(md_fed_elements):
+                args.elements_file = md_fed_elements
+            else:
+                # Try current directory
+                current_elements = 'elements.txt'
+                if os.path.exists(current_elements):
+                    args.elements_file = current_elements
+                else:
+                    raise FileNotFoundError(
+                        f"Could not find elements.txt. Please specify --elements_file or ensure it exists in:\n"
+                        f"  - {checkpoint_elements}\n"
+                        f"  - {md_fed_elements}\n"
+                        f"  - {current_elements}"
+                    )
+    
     print("="*80)
     print(f"Evaluating {args.model_type.upper()} Model")
     print("="*80)
@@ -439,8 +470,7 @@ def main():
     
     # Predict on all clips and accumulate
     from torch.utils.data import DataLoader
-    batch_size = 1
-    for clip in tqdm(DataLoader(dataset, num_workers=2, pin_memory=True, batch_size=batch_size),
+    for clip in tqdm(DataLoader(dataset, num_workers=2, pin_memory=True, batch_size=args.batch_size),
                      desc="Predicting clips"):
         
         frames = clip['frame'].to(args.device)
