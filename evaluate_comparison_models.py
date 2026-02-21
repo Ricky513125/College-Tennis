@@ -45,6 +45,7 @@ from train_i3d_comparison import I3D_MD_FED as I3D_Model
 from train_tsm_comparison import TSM_Flow_MD_FED as TSM_Model
 from train_stgcn_comparison import STGCN_MD_FED as STGCN_Model
 from train_rgb_flow_fusion import RGB_Flow_Fusion_MD_FED as RGB_Flow_Model
+from train_rgb_flow_skeleton_fusion import RGB_Flow_Skeleton_Fusion_MD_FED as RGB_Flow_Skeleton_Model
 from util.dataset import load_classes
 from util.io import load_json, store_json
 from dataset.input_process import ActionSeqVideoDataset
@@ -55,7 +56,9 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
                vtn_spatial_size='small', vtn_temporal_type='longformer',
                clip_len=96, crop_dim=224, tsm_visual_arch='rny002_tsm', tsm_temporal_arch='gru',
                stgcn_skeleton_arch='stgcn++', stgcn_temporal_arch='gru',
-               rgb_flow_visual_arch='rny002_tsm', rgb_flow_temporal_arch='gru', rgb_flow_fusion_method='add'):
+               rgb_flow_visual_arch='rny002_tsm', rgb_flow_temporal_arch='gru', rgb_flow_fusion_method='add',
+               rgb_flow_skeleton_visual_arch='rny002_tsm', rgb_flow_skeleton_skeleton_arch='stgcn++',
+               rgb_flow_skeleton_temporal_arch='gru', rgb_flow_skeleton_fusion_method='concat'):
     """
     加载指定类型的模型
     """
@@ -119,6 +122,23 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
             fusion_method=rgb_flow_fusion_method,
             pretrained=False  # 不需要预训练权重，直接加载 checkpoint
         )
+    elif model_type == 'rgb_flow_skeleton_fusion':
+        print(f"  Visual arch: {rgb_flow_skeleton_visual_arch}")
+        print(f"  Skeleton arch: {rgb_flow_skeleton_skeleton_arch}")
+        print(f"  Temporal arch: {rgb_flow_skeleton_temporal_arch}")
+        print(f"  Fusion method: {rgb_flow_skeleton_fusion_method}")
+        print(f"  Clip len: {clip_len}")
+        print(f"  Crop dim: {crop_dim}")
+        
+        model = RGB_Flow_Skeleton_Model(
+            num_classes=num_classes,
+            clip_len=clip_len,
+            visual_arch=rgb_flow_skeleton_visual_arch,
+            skeleton_arch=rgb_flow_skeleton_skeleton_arch,
+            temporal_arch=rgb_flow_skeleton_temporal_arch,
+            fusion_method=rgb_flow_skeleton_fusion_method,
+            pretrained=False  # 不需要预训练权重，直接加载 checkpoint
+        )
     elif model_type == 'mdfed':
         # Import MD-FED model
         import importlib.util
@@ -164,7 +184,7 @@ def main():
         '--model_type',
         type=str,
         required=True,
-        choices=['vtn', 'i3d', 'mdfed', 'tsm', 'stgcn', 'rgb_flow'],
+        choices=['vtn', 'i3d', 'mdfed', 'tsm', 'stgcn', 'rgb_flow', 'rgb_flow_skeleton_fusion'],
         help='Model type to evaluate'
     )
     parser.add_argument(
@@ -304,6 +324,36 @@ def main():
         help='RGB+Flow fusion method (default: add)'
     )
     
+    # RGB+Flow+Skeleton Fusion-specific parameters
+    parser.add_argument(
+        '--rgb_flow_skeleton_visual_arch',
+        type=str,
+        default='rny002_tsm',
+        choices=['rny002_tsm', 'rn50_tsm'],
+        help='RGB+Flow+Skeleton visual architecture (default: rny002_tsm)'
+    )
+    parser.add_argument(
+        '--rgb_flow_skeleton_skeleton_arch',
+        type=str,
+        default='stgcn++',
+        choices=['stgcn++', 'stgcn'],
+        help='RGB+Flow+Skeleton skeleton architecture (default: stgcn++)'
+    )
+    parser.add_argument(
+        '--rgb_flow_skeleton_temporal_arch',
+        type=str,
+        default='gru',
+        choices=['gru', 'deeper_gru'],
+        help='RGB+Flow+Skeleton temporal architecture (default: gru)'
+    )
+    parser.add_argument(
+        '--rgb_flow_skeleton_fusion_method',
+        type=str,
+        default='concat',
+        choices=['add', 'concat', 'weighted'],
+        help='RGB+Flow+Skeleton fusion method (default: concat)'
+    )
+    
     args = parser.parse_args()
     
     # Set default output file
@@ -344,7 +394,11 @@ def main():
         stgcn_temporal_arch=args.stgcn_temporal_arch,
         rgb_flow_visual_arch=args.rgb_flow_visual_arch,
         rgb_flow_temporal_arch=args.rgb_flow_temporal_arch,
-        rgb_flow_fusion_method=args.rgb_flow_fusion_method
+        rgb_flow_fusion_method=args.rgb_flow_fusion_method,
+        rgb_flow_skeleton_visual_arch=args.rgb_flow_skeleton_visual_arch,
+        rgb_flow_skeleton_skeleton_arch=args.rgb_flow_skeleton_skeleton_arch,
+        rgb_flow_skeleton_temporal_arch=args.rgb_flow_skeleton_temporal_arch,
+        rgb_flow_skeleton_fusion_method=args.rgb_flow_skeleton_fusion_method
     )
     
     # Create dataset with all annotations
@@ -360,8 +414,8 @@ def main():
         overlap_len=args.clip_len // 2,
         crop_dim=args.crop_dim,
         stride=2,
-        flow_dir=args.flow_dir if args.model_type in ['mdfed', 'tsm', 'rgb_flow'] else None,
-        pose_dir=args.pose_dir if args.model_type in ['mdfed', 'stgcn'] else None,
+        flow_dir=args.flow_dir if args.model_type in ['mdfed', 'tsm', 'rgb_flow', 'rgb_flow_skeleton_fusion'] else None,
+        pose_dir=args.pose_dir if args.model_type in ['mdfed', 'stgcn', 'rgb_flow_skeleton_fusion'] else None,
         pad_len=0,
         flip=False,
         multi_crop=False,
@@ -423,6 +477,21 @@ def main():
                 if len(flow.shape) == 6:
                     flow = flow[:, 0]
                 coarse_pred, fine_pred = model(frames=frames, flow=flow)
+            elif args.model_type == 'rgb_flow_skeleton_fusion':
+                # RGB + Flow + Skeleton fusion uses all three modalities
+                flow = clip.get('flow')
+                skeleton = clip.get('skeleton')
+                if flow is None:
+                    raise ValueError("RGB+Flow+Skeleton model requires flow data, but flow_dir not provided")
+                if skeleton is None:
+                    raise ValueError("RGB+Flow+Skeleton model requires skeleton data, but pose_dir not provided")
+                flow = flow.to(args.device)
+                skeleton = skeleton.to(args.device)
+                if len(flow.shape) == 6:
+                    flow = flow[:, 0]
+                if len(skeleton.shape) == 6:
+                    skeleton = skeleton[:, 0]
+                coarse_pred, fine_pred = model(frames=frames, flow=flow, skeleton=skeleton)
             else:  # mdfed
                 flow = clip.get('flow')
                 skeleton = clip.get('skeleton')
