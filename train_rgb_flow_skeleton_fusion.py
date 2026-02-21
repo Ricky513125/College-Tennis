@@ -347,8 +347,8 @@ def train_epoch(model, loader, optimizer, scaler, device, gradient_accumulation_
         flow = loader.dataset.load_flow_gpu(batch, device)
         skeleton = loader.dataset.load_skeleton_gpu(batch, device)
         
-        coarse_label = batch['coarse_mask'].to(device)
-        fine_label = batch['fine_mask'].to(device)
+        coarse_label = batch['coarse_label'].to(device)
+        fine_label = batch['fine_label'].to(device)
         
         with torch.amp.autocast('cuda'):
             coarse_pred, fine_pred = model(frames, flow, skeleton)
@@ -389,8 +389,8 @@ def validate_epoch(model, loader, device):
             flow = loader.dataset.load_flow_gpu(batch, device)
             skeleton = loader.dataset.load_skeleton_gpu(batch, device)
             
-            coarse_label = batch['coarse_mask'].to(device)
-            fine_label = batch['fine_mask'].to(device)
+            coarse_label = batch['coarse_label'].to(device)
+            fine_label = batch['fine_label'].to(device)
             
             with torch.amp.autocast('cuda'):
                 coarse_pred, fine_pred = model(frames, flow, skeleton)
