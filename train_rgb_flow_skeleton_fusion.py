@@ -230,18 +230,34 @@ class RGB_Flow_Skeleton_Fusion_MD_FED(nn.Module):
             # [batch_size, clip_len, num_joints, 2] -> [batch_size, clip_len, 1, num_joints, 2]
             skeleton = skeleton.unsqueeze(2)
         
+        batch_size, clip_len, num_person, num_joints, num_coords = skeleton.shape
+        
         # STGCN expects: [N, M, T, V, C]
         skeleton_transposed = skeleton.transpose(1, 2)  # [batch_size, M, clip_len, V, C]
-        sk_feat = self._sk_feat(skeleton_transposed)  # [batch_size, M, ...]
+        sk_feat = self._sk_feat(skeleton_transposed)  # [batch_size, M, feat_dim, T', V'] or similar
         
-        # Aggregate over person and joint dimensions
-        if len(sk_feat.shape) == 5:
-            sk_feat = sk_feat.mean(dim=1)  # [batch_size, clip_len, V, feat_dim]
-            sk_feat = sk_feat.mean(dim=-2)  # [batch_size, clip_len, feat_dim]
-            sk_feat = sk_feat.transpose(1, 2)  # [batch_size, feat_dim, clip_len]
-            sk_feat = sk_feat.transpose(1, 2)  # [batch_size, clip_len, feat_dim]
-        elif len(sk_feat.shape) == 4:
-            sk_feat = sk_feat.mean(dim=1)  # [batch_size, clip_len, feat_dim]
+        # Aggregate over person dimension and spatial dimensions (same as train_stgcn_comparison.py)
+        # sk_feat shape after STGCN: [batch_size, M, feat_dim, T', V'] or similar
+        sk_feat = sk_feat.mean(dim=1)  # [batch_size, feat_dim, T', V'] - average over persons
+        sk_feat = sk_feat.mean(dim=-1)  # [batch_size, feat_dim, T'] - average over joints
+        sk_feat = sk_feat.transpose(1, 2)  # [batch_size, T', feat_dim]
+        
+        # Reshape to [batch_size, clip_len, feat_dim]
+        # If T' != clip_len, interpolate
+        if sk_feat.shape[1] != clip_len:
+            sk_feat = torch.nn.functional.interpolate(
+                sk_feat.transpose(1, 2),  # [batch_size, feat_dim, T']
+                size=clip_len,
+                mode='linear',
+                align_corners=False
+            ).transpose(1, 2)  # [batch_size, clip_len, feat_dim]
+        
+        # Ensure correct feature dimension
+        if sk_feat.shape[2] != self._sk_feat_dim:
+            # If feature dimension doesn't match, use a projection layer
+            if not hasattr(self, '_sk_feat_proj'):
+                self._sk_feat_proj = nn.Linear(sk_feat.shape[2], self._sk_feat_dim).to(sk_feat.device)
+            sk_feat = self._sk_feat_proj(sk_feat)
         
         # Temporal modeling
         rgb_feat, _ = self._rgb_head(rgb_feat)  # [batch, clip_len, d_model]
