@@ -161,12 +161,42 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
     
     # Load checkpoint
     print(f"\nLoading trained checkpoint: {checkpoint_path}")
-    state_dict = torch.load(checkpoint_path, map_location='cpu')
+    checkpoint = torch.load(checkpoint_path, map_location='cpu')
     
     if model_type == 'mdfed':
-        model.load(state_dict)
+        model.load(checkpoint)
     else:
-        model.load_state_dict(state_dict)
+        # Handle different checkpoint formats
+        if 'model_state_dict' in checkpoint:
+            # Checkpoint format: {'epoch': ..., 'model_state_dict': {...}, ...}
+            state_dict = checkpoint['model_state_dict']
+        elif 'state_dict' in checkpoint:
+            # Alternative format: {'state_dict': {...}, ...}
+            state_dict = checkpoint['state_dict']
+        else:
+            # Direct state_dict format
+            state_dict = checkpoint
+        
+        # Load with strict=False to handle missing/unexpected keys gracefully
+        missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+        if missing_keys:
+            print(f"⚠️  Warning: Missing keys in checkpoint: {len(missing_keys)} keys")
+            if len(missing_keys) <= 10:
+                for key in missing_keys:
+                    print(f"    - {key}")
+            else:
+                print(f"    (showing first 10 of {len(missing_keys)} missing keys)")
+                for key in missing_keys[:10]:
+                    print(f"    - {key}")
+        if unexpected_keys:
+            print(f"⚠️  Warning: Unexpected keys in checkpoint: {len(unexpected_keys)} keys")
+            if len(unexpected_keys) <= 10:
+                for key in unexpected_keys:
+                    print(f"    - {key}")
+            else:
+                print(f"    (showing first 10 of {len(unexpected_keys)} unexpected keys)")
+                for key in unexpected_keys[:10]:
+                    print(f"    - {key}")
     
     model = model.to(device)
     model.eval()
