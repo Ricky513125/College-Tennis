@@ -131,10 +131,12 @@ class RGB_Flow_Skeleton_Fusion_MD_FED(nn.Module):
             raise ValueError(f"Unsupported visual_arch: {visual_arch}")
         
         # Skeleton feature extractor (STGCN++)
+        # Note: num_person=2 is important for BatchNorm dimension matching
         if 'stgcn++' in skeleton_arch:
             sk_feat = STGCN(
                 in_channels=2, 
                 data_bn_type='MVC', 
+                num_person=2,  # Explicitly set to match training
                 gcn_adaptive='init', 
                 gcn_with_res=True,
                 tcn_type='mstcn', 
@@ -145,6 +147,7 @@ class RGB_Flow_Skeleton_Fusion_MD_FED(nn.Module):
             sk_feat = STGCN(
                 in_channels=2, 
                 data_bn_type='MVC', 
+                num_person=2,  # Explicitly set to match training
                 graph_cfg=dict(layout='coco', mode='stgcn_spatial')
             )
             sk_feat_dim = 256
@@ -231,6 +234,23 @@ class RGB_Flow_Skeleton_Fusion_MD_FED(nn.Module):
             skeleton = skeleton.unsqueeze(2)
         
         batch_size, clip_len, num_person, num_joints, num_coords = skeleton.shape
+        
+        # Ensure num_person is 2 (TENNIS_SINGLES_NUM_PEOPLE) to match training
+        # This is important for STGCN's BatchNorm which expects fixed num_person
+        TENNIS_SINGLES_NUM_PEOPLE = 2
+        if num_person > TENNIS_SINGLES_NUM_PEOPLE:
+            # Truncate to 2 people
+            skeleton = skeleton[:, :, :TENNIS_SINGLES_NUM_PEOPLE, :, :]
+        elif num_person < TENNIS_SINGLES_NUM_PEOPLE:
+            # Pad to 2 people
+            padding = torch.zeros(
+                batch_size, clip_len, TENNIS_SINGLES_NUM_PEOPLE - num_person, num_joints, num_coords,
+                dtype=skeleton.dtype, device=skeleton.device
+            )
+            skeleton = torch.cat([skeleton, padding], dim=2)
+        
+        # Update num_person after padding/truncation
+        num_person = TENNIS_SINGLES_NUM_PEOPLE
         
         # STGCN expects: [N, M, T, V, C]
         skeleton_transposed = skeleton.transpose(1, 2)  # [batch_size, M, clip_len, V, C]

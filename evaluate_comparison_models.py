@@ -177,8 +177,28 @@ def load_model(model_type, checkpoint_path, num_classes, device='cuda',
             # Direct state_dict format
             state_dict = checkpoint
         
+        # Filter out BatchNorm layers with dimension mismatch (especially for STGCN)
+        # This can happen if training and evaluation use different graph configurations
+        filtered_state_dict = {}
+        model_state_dict = model.state_dict()
+        
+        for key, value in state_dict.items():
+            if key in model_state_dict:
+                model_value = model_state_dict[key]
+                # Check if shapes match
+                if value.shape == model_value.shape:
+                    filtered_state_dict[key] = value
+                else:
+                    # Skip BatchNorm layers with dimension mismatch
+                    if 'running_mean' in key or 'running_var' in key or 'weight' in key or 'bias' in key:
+                        if 'data_bn' in key or 'bn' in key:
+                            print(f"⚠️  Skipping {key} due to shape mismatch: checkpoint {value.shape} vs model {model_value.shape}")
+                            continue
+                    # For other layers, still try to load if possible
+                    filtered_state_dict[key] = value
+        
         # Load with strict=False to handle missing/unexpected keys gracefully
-        missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+        missing_keys, unexpected_keys = model.load_state_dict(filtered_state_dict, strict=False)
         if missing_keys:
             print(f"⚠️  Warning: Missing keys in checkpoint: {len(missing_keys)} keys")
             if len(missing_keys) <= 10:
@@ -591,66 +611,147 @@ def main():
             fine_scores[start:end, :] += fine_pred_scores
             support[start:end] += 1
     
-    print("\nAveraging predictions...")
+    print("\nAveraging predictions and calculating metrics...")
     
-    # Average predictions and get labels
-    all_coarse_pred = []
-    all_fine_pred = []
-    all_coarse_gt = []
-    all_fine_gt = []
+    # Process fine-grained predictions using dataset-specific rules (same as MD-FED)
+    # This is critical for consistent evaluation
+    dataset_name = 'ncaa-rally'  # or infer from annotations
     
-    for video in tqdm(sorted(pred_dict.keys()), desc="Processing videos"):
+    # Calculate metrics using same method as MD-FED (delta=1 for LCL)
+    print(f"\n{'='*80}")
+    print("Calculating metrics (using MD-FED evaluation method)...")
+    print(f"{'='*80}\n")
+    
+    delta = 1  # Same as MD-FED default
+    from itertools import groupby
+    
+    # Initialize F1 counters
+    f1_lcl = np.zeros((1, 3), int)  # [tp, fp, fn]
+    f1_element = np.zeros((len(classes), 3), int)  # [tp, fp, fn] per class
+    f1_event = dict()  # {event_id: [tp, fp, fn]}
+    edit_scores = []
+    
+    # Also collect all predictions for display
+    all_coarse_pred_list = []
+    all_fine_pred_list = []
+    all_coarse_gt_list = []
+    all_fine_gt_list = []
+    
+    # Process each video separately for proper sequence-level metrics
+    for video in sorted(pred_dict.keys()):
+        coarse_gt, fine_gt = dataset.get_labels(video)
         coarse_scores, fine_scores, support = pred_dict[video]
-        
-        # Average by support count
         support_mask = support > 0
-        coarse_scores[support_mask] /= support[support_mask, None]
         fine_scores[support_mask] /= support[support_mask, None]
         
-        # Get predictions
         coarse_pred_labels = np.argmax(coarse_scores, axis=-1)
-        fine_pred_labels = (fine_scores > 0.5).astype(int)
+        fine_pred = np.zeros_like(fine_scores, int)
         
-        # Get ground truth
-        coarse_gt, fine_gt = dataset.get_labels(video)
+        # Apply dataset-specific rules
+        if 'f3set-tennis-sub' in dataset_name or 'ncaa-rally' in dataset_name:
+            for i in range(len(fine_scores)):
+                for start, end in [[0, 2], [2, 5]]:
+                    max_idx = np.argmax(fine_scores[i, start:end])
+                    fine_pred[i, start + max_idx] = 1
+                if fine_scores[i, 13] > 0.5:
+                    fine_pred[i, 13] = 1
+                if fine_pred[i, 2] != 1:
+                    for start, end in [[5, 7], [7, 13]]:
+                        max_idx = np.argmax(fine_scores[i, start:end])
+                        fine_pred[i, start + max_idx] = 1
+        
+        fine_pred = coarse_pred_labels[:, np.newaxis] * fine_pred
         
         # Ensure same length
         min_len = min(len(coarse_gt), len(coarse_pred_labels))
-        all_coarse_pred.append(coarse_pred_labels[:min_len])
-        all_fine_pred.append(fine_pred_labels[:min_len])
-        all_coarse_gt.append(coarse_gt[:min_len])
-        all_fine_gt.append(fine_gt[:min_len])
+        coarse_pred = coarse_pred_labels[:min_len]
+        fine_pred = fine_pred[:min_len]
+        coarse_gt = coarse_gt[:min_len]
+        fine_gt = fine_gt[:min_len]
+        
+        # F1 (LCL) - Event localization
+        for i in range(len(coarse_pred)):
+            if coarse_pred[i] == 1 and sum(coarse_gt[max(0, i - delta):min(len(coarse_pred), i + delta + 1)]) == 1:
+                f1_lcl[0, 0] += 1  # tp
+            if coarse_pred[i] == 1 and sum(coarse_gt[max(0, i - delta):min(len(coarse_pred), i + delta + 1)]) == 0:
+                f1_lcl[0, 1] += 1  # fp
+            if coarse_gt[i] == 1 and sum(coarse_pred[max(0, i - delta):min(len(coarse_pred), i + delta + 1)]) == 0:
+                f1_lcl[0, 2] += 1  # fn
+        
+        # F1 (element) - Element-level
+        for i in range(len(fine_pred)):
+            for j in range(len(fine_pred[0])):
+                if fine_pred[i, j] == 1 and sum(fine_gt[max(0, i - delta):min(len(fine_pred), i + delta + 1), j]) == 1:
+                    f1_element[j, 0] += 1  # tp
+                if fine_pred[i, j] == 1 and sum(fine_gt[max(0, i - delta):min(len(fine_pred), i + delta + 1), j]) == 0:
+                    f1_element[j, 1] += 1  # fp
+                if fine_gt[i, j] == 1 and sum(fine_pred[max(0, i - delta):min(len(fine_pred), i + delta + 1), j]) == 0:
+                    f1_element[j, 2] += 1  # fn
+        
+        # F1 (event) - Event-level
+        labels = [int(''.join(str(x) for x in row), 2) for row in fine_gt]
+        preds = [int(''.join(str(x) for x in row), 2) for row in fine_pred]
+        preds = coarse_pred * preds
+        
+        for i in range(len(preds)):
+            if preds[i] > 0 and preds[i] in labels[max(0, i - delta):min(len(preds), i + delta + 1)]:
+                if preds[i] not in f1_event:
+                    f1_event[preds[i]] = [1, 0, 0]
+                else:
+                    f1_event[preds[i]][0] += 1
+            if preds[i] > 0 and sum(labels[max(0, i - delta):min(len(preds), i + delta + 1)]) == 0:
+                if preds[i] not in f1_event:
+                    f1_event[preds[i]] = [0, 1, 0]
+                else:
+                    f1_event[preds[i]][1] += 1
+            if labels[i] > 0 and labels[i] not in preds[max(0, i - delta):min(len(preds), i + delta + 1)]:
+                if labels[i] not in f1_event:
+                    f1_event[labels[i]] = [0, 0, 1]
+                else:
+                    f1_event[labels[i]][2] += 1
+        
+        # Edit Score
+        gt = [k for k, g in groupby(labels) if k != 0]
+        pred = [k for k, g in groupby(preds) if k != 0]
+        edit_scores.append(edit_score(pred, gt))
+        
+        # Collect for display
+        all_coarse_pred_list.append(coarse_pred)
+        all_fine_pred_list.append(fine_pred)
+        all_coarse_gt_list.append(coarse_gt)
+        all_fine_gt_list.append(fine_gt)
     
-    # Concatenate all
-    all_coarse_pred = np.concatenate(all_coarse_pred)
-    all_fine_pred = np.concatenate(all_fine_pred, axis=0)
-    all_coarse_gt = np.concatenate(all_coarse_gt)
-    all_fine_gt = np.concatenate(all_fine_gt, axis=0)
+    # Concatenate all for display
+    all_coarse_pred = np.concatenate(all_coarse_pred_list)
+    all_fine_pred = np.concatenate(all_fine_pred_list, axis=0)
+    all_coarse_gt = np.concatenate(all_coarse_gt_list)
+    all_fine_gt = np.concatenate(all_fine_gt_list, axis=0)
     
-    print(f"\nTotal frames for evaluation: {len(all_coarse_gt):,}")
+    # Calculate Mean F1 scores
+    # Mean F1 (LCL)
+    precision_lcl = f1_lcl[:, 0] / (f1_lcl[:, 0] + f1_lcl[:, 1] + 1e-10)
+    recall_lcl = f1_lcl[:, 0] / (f1_lcl[:, 0] + f1_lcl[:, 2] + 1e-10)
+    f1_lcl_mean = np.mean(2 * precision_lcl * recall_lcl / (precision_lcl + recall_lcl + 1e-10))
     
-    # Calculate overall metrics
-    print(f"\n{'='*80}")
-    print("Calculating metrics...")
-    print(f"{'='*80}\n")
+    # Mean F1 (event)
+    f1_event_mean = 0
+    count = 0
+    for value in f1_event.values():
+        if sum(value) == 0:
+            continue
+        precision = value[0] / (value[0] + value[1] + 1e-10)
+        recall = value[0] / (value[0] + value[2] + 1e-10)
+        f1_event_mean += 2 * precision * recall / (precision + recall + 1e-10)
+        count += 1
+    f1_event_mean = f1_event_mean / count if count > 0 else 0
+    
+    # Mean F1 (element)
+    precision_element = f1_element[:, 0] / (f1_element[:, 0] + f1_element[:, 1] + 1e-10)
+    recall_element = f1_element[:, 0] / (f1_element[:, 0] + f1_element[:, 2] + 1e-10)
+    f1_element_mean = np.mean(2 * precision_element * recall_element / (precision_element + recall_element + 1e-10))
     
     # Edit Score
-    edit = edit_score(all_coarse_pred, all_coarse_gt, norm=True, bg_class=[0])
-    
-    # Coarse accuracy
-    coarse_acc = np.mean(all_coarse_pred == all_coarse_gt)
-    
-    # Fine-grained metrics
-    all_fine_pred_flat = all_fine_pred.reshape(-1)
-    all_fine_gt_flat = all_fine_gt.reshape(-1)
-    
-    tp = np.sum((all_fine_pred_flat == 1) & (all_fine_gt_flat == 1))
-    fp = np.sum((all_fine_pred_flat == 1) & (all_fine_gt_flat == 0))
-    fn = np.sum((all_fine_pred_flat == 0) & (all_fine_gt_flat == 1))
-    
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    edit = sum(edit_scores) / len(edit_scores) if len(edit_scores) > 0 else 0
     
     # Show prediction vs ground truth statistics
     print(f"\n{'='*80}")
@@ -716,14 +817,13 @@ def main():
     print()
     
     print(f"{'='*80}")
-    print("Evaluation Results")
+    print("Evaluation Results (MD-FED Metrics)")
     print(f"{'='*80}")
     print(f"Total frames: {len(all_coarse_gt):,}")
+    print(f"Mean F1 (LCL): {f1_lcl_mean:.4f}")
+    print(f"Mean F1 (event): {f1_event_mean:.4f}")
+    print(f"Mean F1 (element): {f1_element_mean:.4f}")
     print(f"Edit Score: {edit:.4f}")
-    print(f"Coarse Accuracy: {coarse_acc:.4f}")
-    print(f"Fine-grained Precision: {precision:.4f}")
-    print(f"Fine-grained Recall: {recall:.4f}")
-    print(f"Fine-grained F1: {f1:.4f}")
     print(f"{'='*80}\n")
     
     # Save results
@@ -732,11 +832,10 @@ def main():
         'checkpoint': args.checkpoint,
         'num_rallies': len(annotations),
         'num_frames': int(len(all_coarse_gt)),
+        'mean_f1_lcl': float(f1_lcl_mean),
+        'mean_f1_event': float(f1_event_mean),
+        'mean_f1_element': float(f1_element_mean),
         'edit_score': float(edit),
-        'coarse_accuracy': float(coarse_acc),
-        'fine_precision': float(precision),
-        'fine_recall': float(recall),
-        'fine_f1': float(f1),
         'coarse_stats': {
             'gt_events': int(np.sum(all_coarse_gt == 1)),
             'gt_non_events': int(np.sum(all_coarse_gt == 0)),

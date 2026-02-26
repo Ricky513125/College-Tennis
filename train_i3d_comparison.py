@@ -114,6 +114,15 @@ class I3D_MD_FED(nn.Module):
         
         return coarse_pred, fine_pred
     
+    def predict(self, frames, flow=None, skeleton=None):
+        """
+        Predict method for evaluation (compatible with MD-FED evaluation)
+        Returns: (coarse_scores, fine_scores) as logits
+        """
+        coarse_pred, fine_pred = self.forward(frames, flow, skeleton)
+        # Return logits (not softmax/sigmoid) for evaluation
+        return None, coarse_pred, fine_pred
+    
     def compute_loss(self, coarse_pred, fine_pred, coarse_label, fine_label):
         """
         计算损失
@@ -390,6 +399,45 @@ def train_i3d(args):
     print(f'Best validation loss: {best_val_loss:.5f}')
     print(f'Models saved to: {args.save_dir}')
     print(f'{"="*80}\n')
+    
+    # Evaluate best model if requested
+    if args.evaluate_after_training:
+        print("\n" + "="*80)
+        print("Evaluating Best Model")
+        print("="*80)
+        
+        # Load best model
+        model.load_state_dict(torch.load(os.path.join(args.save_dir, 'best_model.pt')))
+        model.eval()
+        
+        # Import evaluation function from MD-FED
+        sys.path.insert(0, str(Path(__file__).parent / 'MD-FED'))
+        from train_MD_FED import evaluate as md_fed_evaluate
+        
+        # Create evaluation dataset (use validation dataset)
+        eval_dataset = ActionSeqVideoDataset(
+            classes=classes,
+            label_file=os.path.join(args.save_dir, 'val_annotations.json'),
+            frame_dir=args.frame_dir,
+            clip_len=args.clip_len,
+            crop_dim=args.crop_dim,
+            stride=args.stride,
+            is_eval=True,
+            stage=3
+        )
+        
+        # Evaluate using MD-FED's evaluation function
+        print("\nRunning evaluation (this may take a while)...")
+        edit_score = md_fed_evaluate(
+            model, eval_dataset, classes, 
+            delta=1, window=5, 
+            dataset_name='ncaa-rally', 
+            device='cuda'
+        )
+        
+        print(f"\n✓ Evaluation complete!")
+        print(f"  Edit Score: {edit_score:.4f}")
+        print(f"{'='*80}\n")
 
 
 def main():
@@ -508,6 +556,11 @@ def main():
         type=str,
         default=None,
         help='Path to pretrained I3D weights (Kinetics pretrained)'
+    )
+    parser.add_argument(
+        '--evaluate_after_training',
+        action='store_true',
+        help='Evaluate the best model after training (computes Mean F1 (LCL), Mean F1 (event), Mean F1 (element), Edit Score)'
     )
     
     args = parser.parse_args()
