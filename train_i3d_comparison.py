@@ -177,11 +177,29 @@ def prepare_i3d_data(args):
     store_json(os.path.join(args.save_dir, 'train_annotations.json'), train_annotations)
     store_json(os.path.join(args.save_dir, 'val_annotations.json'), val_annotations)
     
-    # Copy elements.txt
+    # Copy elements.txt from various possible locations
     import shutil
-    if os.path.exists('elements.txt'):
-        shutil.copy('elements.txt', os.path.join(args.save_dir, 'elements.txt'))
-        print("Copied elements.txt")
+    elements_src = None
+    possible_sources = [
+        'elements.txt',  # Current directory
+        os.path.join('F3Set', 'data', 'f3set-tennis', 'elements.txt'),  # F3Set data directory
+        os.path.join('MD-FED', 'data', 'f3set-tennis-sub', 'elements.txt'),  # MD-FED data directory
+    ]
+    
+    for src in possible_sources:
+        if os.path.exists(src):
+            elements_src = src
+            break
+    
+    if elements_src:
+        elements_dst = os.path.join(args.save_dir, 'elements.txt')
+        shutil.copy(elements_src, elements_dst)
+        print(f"Copied elements.txt from {elements_src} to {elements_dst}")
+    else:
+        print("⚠️  Warning: elements.txt not found in any of the expected locations")
+        print("  Expected locations:")
+        for src in possible_sources:
+            print(f"    - {src}")
     
     return train_annotations, val_annotations
 
@@ -203,8 +221,29 @@ def train_i3d(args):
     print("\nStep 1: Preparing data...")
     train_annotations, val_annotations = prepare_i3d_data(args)
     
-    # Load classes
-    classes = load_classes('elements.txt')
+    # Load classes - try to find elements.txt automatically
+    elements_file = None
+    # Try multiple locations
+    possible_locations = [
+        'elements.txt',  # Current directory
+        os.path.join('F3Set', 'data', 'f3set-tennis', 'elements.txt'),  # F3Set data directory
+        os.path.join('MD-FED', 'data', 'f3set-tennis-sub', 'elements.txt'),  # MD-FED data directory
+        os.path.join(args.save_dir, 'elements.txt'),  # Save directory (if copied)
+    ]
+    
+    for loc in possible_locations:
+        if os.path.exists(loc):
+            elements_file = loc
+            break
+    
+    if elements_file is None:
+        raise FileNotFoundError(
+            f"Could not find elements.txt. Please ensure it exists in one of:\n" +
+            "\n".join(f"  - {loc}" for loc in possible_locations)
+        )
+    
+    print(f"Loading classes from: {elements_file}")
+    classes = load_classes(elements_file)
     print(f"Loaded {len(classes)} classes")
     
     # Create model
