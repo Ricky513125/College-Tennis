@@ -575,7 +575,6 @@ def train_vtn(args):
             clip_len=args.clip_len,
             crop_dim=data_crop_dim,
             stride=2,
-            is_eval=True,
             flow_dir=None,
             pose_dir=None
         )

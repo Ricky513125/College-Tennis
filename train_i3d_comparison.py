@@ -467,8 +467,8 @@ def train_i3d(args):
             clip_len=args.clip_len,
             crop_dim=args.crop_dim,
             stride=args.stride,
-            is_eval=True,
-            stage=3
+            flow_dir=None,
+            pose_dir=None
         )
         
         # Evaluate using MD-FED's evaluation function

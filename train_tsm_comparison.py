@@ -554,7 +554,6 @@ def train_tsm(args):
             clip_len=args.clip_len,
             crop_dim=args.crop_dim,
             stride=2,
-            is_eval=True,
             flow_dir=args.flow_dir,
             pose_dir=None
         )

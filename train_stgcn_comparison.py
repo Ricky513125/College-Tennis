@@ -570,7 +570,6 @@ def train_stgcn(args):
             clip_len=args.clip_len,
             crop_dim=args.crop_dim,
             stride=2,
-            is_eval=True,
             flow_dir=None,
             pose_dir=args.pose_dir
         )
