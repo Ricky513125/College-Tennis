@@ -158,8 +158,16 @@ class TSM_Flow_MD_FED(nn.Module):
                 skeleton = torch.FloatTensor(skeleton)
             skeleton = skeleton.cuda()
         
-        coarse_pred, fine_pred = self.forward(frames, flow, skeleton)
-        # Return logits (not softmax/sigmoid) for evaluation
+        self.eval()
+        with torch.no_grad():
+            coarse_pred, fine_pred = self.forward(frames, flow, skeleton)
+            # Apply softmax to coarse_pred and sigmoid to fine_pred (matching MD-FED behavior)
+            coarse_pred = torch.softmax(coarse_pred, dim=-1)  # [batch, clip_len, 2]
+            fine_pred = torch.sigmoid(fine_pred)  # [batch, clip_len, num_classes]
+            # Convert to numpy arrays (matching MD-FED predict method)
+            coarse_pred = coarse_pred.cpu().numpy()
+            fine_pred = fine_pred.cpu().numpy()
+        # Return None, coarse_scores, fine_scores as numpy arrays
         return None, coarse_pred, fine_pred
     
     def compute_loss(self, coarse_pred, fine_pred, coarse_label, fine_label):
