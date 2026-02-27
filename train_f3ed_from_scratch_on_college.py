@@ -35,7 +35,7 @@ if os.path.exists(f3set_dir):
     sys.path.insert(0, f3set_dir)
 
 # Import F3ED model and utilities
-from train_f3set_f3ed import F3Set, evaluate, get_lr_scheduler, store_config
+from train_f3set_f3ed import F3Set, evaluate, get_lr_scheduler, store_config, EPOCH_NUM_FRAMES
 from dataset.frame_process import ActionSeqDataset, ActionSeqVideoDataset
 from util.dataset import load_classes
 from util.io import load_json, store_json
@@ -108,9 +108,12 @@ def prepare_college_tennis_data(manual_annotations_file, output_dir, dataset_nam
     return str(data_dir)
 
 
-def get_datasets(data_dir, frame_dir, clip_len, crop_dim, stride):
+def get_datasets(data_dir, frame_dir, clip_len, crop_dim, stride, dataset_len=None):
     """
     Create train and validation datasets
+    
+    Args:
+        dataset_len: Number of clips per epoch. If None, will be calculated based on EPOCH_NUM_FRAMES
     """
     elements_file = os.path.join(data_dir, 'elements.txt')
     classes = load_classes(elements_file)
@@ -118,13 +121,23 @@ def get_datasets(data_dir, frame_dir, clip_len, crop_dim, stride):
     train_json = os.path.join(data_dir, 'train.json')
     val_json = os.path.join(data_dir, 'val.json')
     
+    # Calculate dataset_len if not provided
+    if dataset_len is None:
+        dataset_len = EPOCH_NUM_FRAMES // (clip_len * stride)
+    
+    print(f'Dataset size: {dataset_len} clips per epoch')
+    
     train_data = ActionSeqDataset(
-        classes, train_json, frame_dir, clip_len,
+        classes, train_json, frame_dir, clip_len, dataset_len,
+        is_eval=False,  # Training mode
         crop_dim=crop_dim, stride=stride
     )
     
+    # Validation dataset uses smaller dataset_len
+    val_dataset_len = dataset_len // 4
     val_data = ActionSeqDataset(
-        classes, val_json, frame_dir, clip_len,
+        classes, val_json, frame_dir, clip_len, val_dataset_len,
+        is_eval=True,  # Evaluation mode
         crop_dim=crop_dim, stride=stride
     )
     
