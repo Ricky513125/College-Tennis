@@ -510,7 +510,6 @@ def train_i3d(args):
         print(f"\n📁 Saving debug outputs to: {debug_dir}")
         
         # Custom evaluation with saving first 5 predictions
-        from torch.utils.data import DataLoader
         from PIL import Image
         
         pred_dict = {}
