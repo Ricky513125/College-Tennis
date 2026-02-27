@@ -450,8 +450,14 @@ def train_i3d(args):
         model.eval()
         
         # Import evaluation function from MD-FED
-        sys.path.insert(0, str(Path(__file__).parent / 'MD-FED'))
-        from train_MD_FED import evaluate as md_fed_evaluate
+        # Use importlib to handle hyphen in filename
+        import importlib.util
+        md_fed_dir = Path(__file__).parent / 'MD-FED'
+        train_md_fed_path = md_fed_dir / 'train_MD-FED.py'
+        spec = importlib.util.spec_from_file_location("train_MD_FED", train_md_fed_path)
+        train_MD_FED = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(train_MD_FED)
+        md_fed_evaluate = train_MD_FED.evaluate
         
         # Create evaluation dataset (use validation dataset)
         eval_dataset = ActionSeqVideoDataset(

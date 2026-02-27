@@ -55,10 +55,12 @@ class STGCN_MD_FED(nn.Module):
         self._clip_len = clip_len
         
         # Skeleton feature extractor (STGCN++)
+        # Note: num_person=2 is important for BatchNorm dimension matching
         if 'stgcn++' in skeleton_arch:
             sk_feat = STGCN(
                 in_channels=2, 
                 data_bn_type='MVC', 
+                num_person=2,  # Explicitly set to match training
                 gcn_adaptive='init', 
                 gcn_with_res=True,
                 tcn_type='mstcn', 
@@ -69,6 +71,7 @@ class STGCN_MD_FED(nn.Module):
             sk_feat = STGCN(
                 in_channels=2, 
                 data_bn_type='MVC', 
+                num_person=2,  # Explicitly set to match training
                 graph_cfg=dict(layout='coco', mode='stgcn_spatial')
             )
             sk_feat_dim = 256
@@ -108,6 +111,23 @@ class STGCN_MD_FED(nn.Module):
             skeleton = skeleton.unsqueeze(2)  # [batch_size, clip_len, 1, num_joints, 2]
         
         batch_size, clip_len, num_person, num_joints, num_coords = skeleton.shape
+        
+        # Ensure num_person is 2 (TENNIS_SINGLES_NUM_PEOPLE) to match training
+        # This is important for STGCN's BatchNorm which expects fixed num_person
+        TENNIS_SINGLES_NUM_PEOPLE = 2
+        if num_person > TENNIS_SINGLES_NUM_PEOPLE:
+            # Truncate to 2 people
+            skeleton = skeleton[:, :, :TENNIS_SINGLES_NUM_PEOPLE, :, :]
+        elif num_person < TENNIS_SINGLES_NUM_PEOPLE:
+            # Pad to 2 people
+            padding = torch.zeros(
+                batch_size, clip_len, TENNIS_SINGLES_NUM_PEOPLE - num_person, num_joints, num_coords,
+                dtype=skeleton.dtype, device=skeleton.device
+            )
+            skeleton = torch.cat([skeleton, padding], dim=2)
+        
+        # Update num_person after padding/truncation
+        num_person = TENNIS_SINGLES_NUM_PEOPLE
         
         # Extract skeleton features
         # STGCN expects: [N, M, T, V, C] where N=batch, M=num_person, T=time, V=num_joints, C=2
@@ -149,6 +169,15 @@ class STGCN_MD_FED(nn.Module):
         fine_pred = self._fine_pred(sk_feat)  # [batch, clip_len, num_classes]
         
         return coarse_pred, fine_pred
+    
+    def predict(self, frames, flow=None, skeleton=None):
+        """
+        Predict method for evaluation (compatible with MD-FED evaluation)
+        Returns: (coarse_scores, fine_scores) as logits
+        """
+        coarse_pred, fine_pred = self.forward(frames, flow, skeleton)
+        # Return logits (not softmax/sigmoid) for evaluation
+        return None, coarse_pred, fine_pred
     
     def compute_loss(self, coarse_pred, fine_pred, coarse_label, fine_label):
         """
@@ -208,12 +237,29 @@ def prepare_stgcn_data(manual_annotations_file, output_dir, dataset_name='ncaa-r
     with open(val_file, 'w', encoding='utf-8') as f:
         json.dump(val_annotations, f, indent=2, ensure_ascii=False)
     
-    # Copy elements.txt
-    elements_src = 'MD-FED/data/f3set-tennis-sub/elements.txt'
-    if os.path.exists(elements_src):
-        import shutil
-        shutil.copy(elements_src, data_dir / 'elements.txt')
-        print(f"Copied elements.txt")
+    # Copy elements.txt from various possible locations
+    import shutil
+    elements_src = None
+    possible_sources = [
+        'elements.txt',  # Current directory
+        os.path.join('F3Set', 'data', 'f3set-tennis', 'elements.txt'),  # F3Set data directory
+        os.path.join('MD-FED', 'data', 'f3set-tennis-sub', 'elements.txt'),  # MD-FED data directory
+    ]
+    
+    for src in possible_sources:
+        if os.path.exists(src):
+            elements_src = src
+            break
+    
+    if elements_src:
+        elements_dst = data_dir / 'elements.txt'
+        shutil.copy(elements_src, elements_dst)
+        print(f"Copied elements.txt from {elements_src} to {elements_dst}")
+    else:
+        print("⚠️  Warning: elements.txt not found in any of the expected locations")
+        print("  Expected locations:")
+        for src in possible_sources:
+            print(f"    - {src}")
     
     return str(data_dir)
 
@@ -493,6 +539,56 @@ def train_stgcn(args):
     print(f'Best validation loss: {best_val_loss:.5f}')
     print(f'Checkpoints saved to: {args.save_dir}')
     print(f"{'='*80}\n")
+    
+    # Evaluate best model if requested
+    if args.evaluate_after_training:
+        print("\n" + "="*80)
+        print("Evaluating Best Model")
+        print("="*80)
+        
+        # Load best model
+        model.load_state_dict(torch.load(os.path.join(args.save_dir, 'best_model.pt')))
+        model.eval()
+        
+        # Import evaluation function from MD-FED
+        # Use importlib to handle hyphen in filename
+        import importlib.util
+        md_fed_dir = Path(__file__).parent / 'MD-FED'
+        train_md_fed_path = md_fed_dir / 'train_MD-FED.py'
+        spec = importlib.util.spec_from_file_location("train_MD_FED", train_md_fed_path)
+        train_MD_FED = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(train_MD_FED)
+        md_fed_evaluate = train_MD_FED.evaluate
+        from dataset.input_process import ActionSeqVideoDataset
+        
+        # Create evaluation dataset (use validation dataset)
+        val_json_path = os.path.join(data_dir, 'val.json')
+        eval_dataset = ActionSeqVideoDataset(
+            classes=classes,
+            label_file=val_json_path,
+            frame_dir=args.frame_dir,
+            clip_len=args.clip_len,
+            crop_dim=args.crop_dim,
+            stride=2,
+            is_eval=True,
+            flow_dir=None,
+            pose_dir=args.pose_dir
+        )
+        
+        # Evaluate using MD-FED's evaluation function
+        print("\nRunning evaluation (this may take a while)...")
+        print("This will compute: Mean F1 (LCL), Mean F1 (event), Mean F1 (element), Edit Score")
+        edit_score = md_fed_evaluate(
+            model, eval_dataset, classes, 
+            delta=1, window=5, 
+            dataset_name=args.dataset_name, 
+            device='cuda'
+        )
+        
+        print(f"\n✓ Evaluation complete!")
+        print(f"  Edit Score: {edit_score:.4f}")
+        print(f"  (See above for Mean F1 (LCL), Mean F1 (event), Mean F1 (element))")
+        print(f"{'='*80}\n")
 
 
 def main():
@@ -608,6 +704,11 @@ def main():
         type=str,
         default=None,
         help='Path to Stage 1 checkpoint for initialization (recommended for fair comparison with MD-FED)'
+    )
+    parser.add_argument(
+        '--evaluate_after_training',
+        action='store_true',
+        help='Evaluate the best model after training (computes Mean F1 (LCL), Mean F1 (event), Mean F1 (element), Edit Score)'
     )
     
     args = parser.parse_args()
