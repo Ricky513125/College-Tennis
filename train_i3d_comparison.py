@@ -504,8 +504,133 @@ def train_i3d(args):
             pose_dir=None
         )
         
-        # Evaluate using MD-FED's evaluation function
+        # Create directory to save debug outputs
+        debug_dir = os.path.join(args.save_dir, 'debug_predictions')
+        os.makedirs(debug_dir, exist_ok=True)
+        print(f"\n📁 Saving debug outputs to: {debug_dir}")
+        
+        # Custom evaluation with saving first 5 predictions
+        from torch.utils.data import DataLoader
+        import numpy as np
+        from PIL import Image
+        
+        pred_dict = {}
+        for video, video_len, _ in eval_dataset.videos:
+            pred_dict[video] = (
+                np.zeros((video_len, 2), np.float32),
+                np.zeros((video_len, len(classes)), np.float32),
+                np.zeros(video_len, np.int32))
+        
+        saved_videos = set()
+        max_save_videos = 5
+        
         print("\nRunning evaluation (this may take a while)...")
+        print(f"Will save inputs/outputs for first {max_save_videos} videos to {debug_dir}")
+        
+        batch_size = 1  # Use batch_size=1 for saving individual clips
+        for clip_idx, clip in enumerate(tqdm(DataLoader(
+                eval_dataset, num_workers=0, pin_memory=False, batch_size=batch_size
+        ), desc="Evaluating")):
+            video = clip['video'][0]
+            
+            # Save inputs and outputs for first 5 videos
+            if video not in saved_videos and len(saved_videos) < max_save_videos:
+                saved_videos.add(video)
+                video_debug_dir = os.path.join(debug_dir, video.replace('/', '_').replace('\\', '_'))
+                os.makedirs(video_debug_dir, exist_ok=True)
+                
+                # Save input frames
+                frames = clip['frame'][0]  # [clip_len, C, H, W]
+                frames_dir = os.path.join(video_debug_dir, 'input_frames')
+                os.makedirs(frames_dir, exist_ok=True)
+                
+                # Convert frames to numpy and denormalize (ImageNet normalization)
+                frames_np = frames.cpu().numpy()
+                # Denormalize: frames are normalized with mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                mean = np.array([0.485, 0.456, 0.406]).reshape(1, 3, 1, 1)
+                std = np.array([0.229, 0.224, 0.225]).reshape(1, 3, 1, 1)
+                frames_np = frames_np * std + mean
+                frames_np = np.clip(frames_np, 0, 1)
+                
+                for frame_idx in range(min(frames_np.shape[0], 20)):  # Save first 20 frames
+                    frame = frames_np[frame_idx].transpose(1, 2, 0)  # [H, W, C]
+                    if frame.shape[2] == 3:
+                        frame = (frame * 255).astype(np.uint8)
+                        img = Image.fromarray(frame)
+                        img.save(os.path.join(frames_dir, f'frame_{frame_idx:04d}.jpg'))
+                
+                # Get predictions
+                _, coarse_scores, fine_scores = model.predict(
+                    clip['frame'], clip['flow'], clip['skeleton']
+                )
+                
+                # Save predictions
+                np.save(os.path.join(video_debug_dir, 'coarse_scores.npy'), coarse_scores[0])
+                np.save(os.path.join(video_debug_dir, 'fine_scores.npy'), fine_scores[0])
+                
+                # Save predictions as text
+                classes_inv = {v: k for k, v in classes.items()}
+                classes_inv[0] = 'NA'
+                
+                with open(os.path.join(video_debug_dir, 'predictions.txt'), 'w', encoding='utf-8') as f:
+                    f.write(f"Video: {video}\n")
+                    f.write(f"Clip start frame: {clip['start'][0].item()}\n")
+                    f.write(f"Coarse scores shape: {coarse_scores[0].shape}\n")
+                    f.write(f"Fine scores shape: {fine_scores[0].shape}\n\n")
+                    
+                    f.write("="*60 + "\n")
+                    f.write("Coarse Predictions (Event Detection):\n")
+                    f.write("="*60 + "\n")
+                    coarse_pred_classes = np.argmax(coarse_scores[0], axis=-1)
+                    for i in range(coarse_scores[0].shape[0]):
+                        frame_num = clip['start'][0].item() + i
+                        f.write(f"Frame {frame_num:4d}: class={coarse_pred_classes[i]} "
+                               f"(no-event={coarse_scores[0][i, 0]:.4f}, "
+                               f"event={coarse_scores[0][i, 1]:.4f})\n")
+                    
+                    f.write("\n" + "="*60 + "\n")
+                    f.write("Fine Predictions (Top 3 classes per frame):\n")
+                    f.write("="*60 + "\n")
+                    for i in range(fine_scores[0].shape[0]):
+                        frame_num = clip['start'][0].item() + i
+                        top3_indices = np.argsort(fine_scores[0][i])[-3:][::-1]
+                        f.write(f"Frame {frame_num:4d}: ")
+                        for idx in top3_indices:
+                            class_name = classes_inv.get(idx + 1, f'class_{idx+1}')
+                            f.write(f"{class_name}({fine_scores[0][i, idx]:.4f}) ")
+                        f.write("\n")
+                
+                print(f"  ✓ Saved debug info for video {len(saved_videos)}/{max_save_videos}: {video}")
+            
+            # Accumulate predictions (same as MD-FED evaluate)
+            _, batch_coarse_scores, batch_fine_scores = model.predict(
+                clip['frame'], clip['flow'], clip['skeleton']
+            )
+            
+            for i in range(clip['frame'].shape[0]):
+                video = clip['video'][i]
+                coarse_scores, fine_scores, support = pred_dict[video]
+                coarse_pred_scores = batch_coarse_scores[i]
+                fine_pred_scores = batch_fine_scores[i]
+                
+                start = clip['start'][i].item()
+                if start < 0:
+                    coarse_pred_scores = coarse_pred_scores[-start:, :]
+                    fine_pred_scores = fine_pred_scores[-start:, :]
+                    start = 0
+                end = start + coarse_pred_scores.shape[0]
+                if end >= coarse_scores.shape[0]:
+                    end = coarse_scores.shape[0]
+                    coarse_pred_scores = coarse_pred_scores[:end - start, :]
+                    fine_pred_scores = fine_pred_scores[:end - start, :]
+                coarse_scores[start:end, :] += coarse_pred_scores
+                fine_scores[start:end, :] += fine_pred_scores
+                support[start:end] += 1
+        
+        # Now call MD-FED evaluate to compute metrics (it will use the accumulated pred_dict)
+        # But we need to pass pred_dict, so let's just call the full evaluate function
+        # Actually, let's just call md_fed_evaluate normally and it will handle everything
+        print("\nComputing evaluation metrics...")
         edit_score = md_fed_evaluate(
             model, eval_dataset, classes, 
             delta=1, window=5, 
@@ -515,6 +640,8 @@ def train_i3d(args):
         
         print(f"\n✓ Evaluation complete!")
         print(f"  Edit Score: {edit_score:.4f}")
+        print(f"  Debug outputs saved to: {debug_dir}")
+        print(f"  (First {max_save_videos} videos saved with inputs and outputs)")
         print(f"{'='*80}\n")
 
 
