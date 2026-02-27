@@ -511,7 +511,6 @@ def train_i3d(args):
         
         # Custom evaluation with saving first 5 predictions
         from torch.utils.data import DataLoader
-        import numpy as np
         from PIL import Image
         
         pred_dict = {}
