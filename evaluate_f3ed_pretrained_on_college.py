@@ -248,12 +248,15 @@ def evaluate_f3ed_pretrained(args):
     results_file = os.path.join(args.output_dir, 'evaluation_results.json')
     
     # Convert results to standard format (matching MD-FED evaluation)
+    # Get number of videos from _labels attribute
+    num_videos = len(test_dataset._labels) if hasattr(test_dataset, '_labels') else len(test_dataset.videos)
+    
     evaluation_results = {
         'experiment': 'F3ED pretrained on F3Set, evaluated on college tennis (no fine-tuning)',
         'f3set_model_dir': args.f3set_model_dir,
         'f3set_best_epoch': best_epoch,
         'college_tennis_annotations': args.manual_annotations,
-        'num_videos': len(test_dataset._src_data),
+        'num_videos': num_videos,
         'edit_score': float(edit_score_result),
         'note': 'F3Set evaluate function prints Mean F1 (event) and Mean F1 (element) to console, but only returns edit_score. Check console output for full metrics.'
     }
