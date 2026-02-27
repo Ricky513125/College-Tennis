@@ -241,11 +241,26 @@ def train_f3ed_from_scratch(args):
     
     os.makedirs(args.save_dir, exist_ok=True)
     
-    # Store config
-    store_config(
-        os.path.join(args.save_dir, 'config.json'),
-        args, num_epochs, classes
-    )
+    # Store config (create a custom config dict since we don't have args.dataset)
+    config = {
+        'dataset': 'college-tennis',  # Custom dataset name
+        'num_classes': len(classes),
+        'feature_arch': args.feature_arch,
+        'temporal_arch': args.temporal_arch,
+        'use_ctx': args.use_ctx,
+        'clip_len': args.clip_len,
+        'batch_size': args.batch_size,
+        'crop_dim': args.crop_dim,
+        'window': args.window,
+        'stride': args.stride,
+        'num_epochs': num_epochs,
+        'warm_up_epochs': args.warm_up_epochs,
+        'learning_rate': args.learning_rate,
+        'start_val_epoch': args.start_val_epoch,
+        'gpu_parallel': args.gpu_parallel,
+        'epoch_num_frames': EPOCH_NUM_FRAMES
+    }
+    store_json(os.path.join(args.save_dir, 'config.json'), config, pretty=True)
     
     for epoch in range(num_epochs):
         # Train
