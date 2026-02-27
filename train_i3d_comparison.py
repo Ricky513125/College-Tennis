@@ -158,7 +158,10 @@ class I3D_MD_FED(nn.Module):
         fine_label = fine_label.reshape(-1, self._num_classes)
         
         # Coarse loss (event detection)
-        coarse_loss = nn.functional.cross_entropy(coarse_pred, coarse_label)
+        # Use weighted loss to handle class imbalance (event vs no-event)
+        # Weight event class (class 1) 20x to encourage event prediction
+        class_weights = torch.tensor([1.0, 20.0]).to(coarse_pred.device)
+        coarse_loss = nn.functional.cross_entropy(coarse_pred, coarse_label, weight=class_weights)
         
         # Fine loss (multi-label classification)
         fine_loss = nn.functional.binary_cross_entropy_with_logits(fine_pred, fine_label.float())

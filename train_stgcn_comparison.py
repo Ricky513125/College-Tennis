@@ -206,7 +206,10 @@ class STGCN_MD_FED(nn.Module):
         计算损失函数
         """
         # Coarse loss (event detection)
-        coarse_loss = nn.CrossEntropyLoss()(
+        # Use weighted loss to handle class imbalance (event vs no-event)
+        # Weight event class (class 1) 20x to encourage event prediction
+        class_weights = torch.tensor([1.0, 20.0]).to(coarse_pred.device)
+        coarse_loss = nn.CrossEntropyLoss(weight=class_weights)(
             coarse_pred.view(-1, 2),
             coarse_label.view(-1).long()
         )
