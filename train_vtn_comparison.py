@@ -128,6 +128,20 @@ class VTN_MD_FED(nn.Module):
         Predict method for evaluation (compatible with MD-FED evaluation)
         Returns: (coarse_scores, fine_scores) as logits
         """
+        # Move inputs to GPU if they're not already
+        if frames is not None:
+            if not isinstance(frames, torch.Tensor):
+                frames = torch.FloatTensor(frames)
+            frames = frames.cuda()
+        if flow is not None:
+            if not isinstance(flow, torch.Tensor):
+                flow = torch.FloatTensor(flow)
+            flow = flow.cuda()
+        if skeleton is not None:
+            if not isinstance(skeleton, torch.Tensor):
+                skeleton = torch.FloatTensor(skeleton)
+            skeleton = skeleton.cuda()
+        
         coarse_pred, fine_pred = self.forward(frames, flow, skeleton)
         # Return logits (not softmax/sigmoid) for evaluation
         return None, coarse_pred, fine_pred
