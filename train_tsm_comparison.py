@@ -389,11 +389,18 @@ def train_tsm(args):
     warm_up_epochs = 3
     cosine_epochs = args.num_epochs - warm_up_epochs
     
-    lr_scheduler = ChainedScheduler([
-        LinearLR(optimizer, start_factor=0.01, end_factor=1.0,
-                 total_iters=warm_up_epochs * num_steps_per_epoch),
-        CosineAnnealingLR(optimizer, num_steps_per_epoch * cosine_epochs)
-    ])
+    # Only use cosine scheduler if there are epochs after warmup
+    if cosine_epochs > 0:
+        lr_scheduler = ChainedScheduler([
+            LinearLR(optimizer, start_factor=0.01, end_factor=1.0,
+                     total_iters=warm_up_epochs * num_steps_per_epoch),
+            CosineAnnealingLR(optimizer, num_steps_per_epoch * cosine_epochs)
+        ])
+    else:
+        # If no cosine epochs, just use warmup scheduler
+        print(f"⚠️  Warning: num_epochs ({args.num_epochs}) <= warm_up_epochs ({warm_up_epochs}), using only warmup scheduler")
+        lr_scheduler = LinearLR(optimizer, start_factor=0.01, end_factor=1.0,
+                               total_iters=warm_up_epochs * num_steps_per_epoch)
     
     # Training loop
     print("\nStep 5: Training...")

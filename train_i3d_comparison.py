@@ -355,12 +355,20 @@ def train_i3d(args):
         end_factor=1.0,
         total_iters=args.warmup_epochs * len(train_loader)
     )
-    cosine_scheduler = CosineAnnealingLR(
-        optimizer,
-        T_max=(args.num_epochs - args.warmup_epochs) * len(train_loader),
-        eta_min=args.learning_rate * 0.01
-    )
-    lr_scheduler = ChainedScheduler([warmup_scheduler, cosine_scheduler])
+    
+    # Only use cosine scheduler if there are epochs after warmup
+    cosine_epochs = args.num_epochs - args.warmup_epochs
+    if cosine_epochs > 0:
+        cosine_scheduler = CosineAnnealingLR(
+            optimizer,
+            T_max=cosine_epochs * len(train_loader),
+            eta_min=args.learning_rate * 0.01
+        )
+        lr_scheduler = ChainedScheduler([warmup_scheduler, cosine_scheduler])
+    else:
+        # If no cosine epochs, just use warmup scheduler
+        print(f"⚠️  Warning: num_epochs ({args.num_epochs}) <= warmup_epochs ({args.warmup_epochs}), using only warmup scheduler")
+        lr_scheduler = warmup_scheduler
     
     # Mixed precision training
     scaler = torch.amp.GradScaler('cuda')
