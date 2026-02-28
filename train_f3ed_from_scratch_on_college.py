@@ -348,8 +348,8 @@ def train_f3ed_from_scratch(args):
             'best_epoch': best_epoch,
             'best_criterion': best_criterion,
             'final_edit_score': final_edit,
-            'num_train_videos': len(train_data._src_data),
-            'num_val_videos': len(val_data._src_data),
+            'num_train_videos': len(train_data._labels),
+            'num_val_videos': len(val_data._labels),
         }
         
         results_file = os.path.join(args.save_dir, 'final_results.json')
