@@ -210,17 +210,19 @@ class F3Set(BaseRGBModel):
             for i in range(batch_size):
                 # sequence of ground truth labels
                 selected_label = fine_label[i, coarse_label[i].bool()]
-                seq_label[i, :selected_label.shape[0], 1:] = selected_label
+                # Truncate to max_seq_len if necessary
+                actual_len = min(selected_label.shape[0], max_seq_len)
+                seq_label[i, :actual_len, 1:] = selected_label[:actual_len]
 
                 # sequence of predicted classes
                 selected_pred = fine_pred_score[i, coarse_label[i].bool()]
-                seq_pred[i, :selected_label.shape[0], 1:] = selected_pred
-                for j in range(selected_label.shape[0]):
+                seq_pred[i, :actual_len, 1:] = selected_pred[:actual_len]
+                for j in range(actual_len):
                     seq_pred[i, j, 0] = hand[i, int(torch.round(selected_pred[j, 0]))]
                     seq_label[i, j, 0] = hand[i, int(torch.round(selected_label[j, 0]))]
 
                 # sequence mask
-                seq_mask[i, :selected_label.shape[0]] = False
+                seq_mask[i, :actual_len] = False
 
             # contextual module refine sequence
             seq_pred_refined = self._ctx(seq_pred)

@@ -162,7 +162,7 @@ python train_f3ed_from_scratch_on_college.py \
     --manual_annotations manual_annotations.json \
     --frame_dir /mnt/ssd2/lingyu/College-Tennis/ncaa_frames_rally \
     --save_dir ./f3ed_from_scratch_outputs \
-    --batch_size 4 \
+    --batch_size 1 \
     --num_epochs 100 \
     --learning_rate 0.001 \
     --feature_arch rny002_tsm \
